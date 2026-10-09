@@ -29,7 +29,7 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { NewChat } from './components/new-chat'
 import { type ChatUser, type Convo } from './data/chat-types'
 // Fake Data
-import { conversations } from './data/convo.json'
+import { conversations } from './data/conversations'
 
 export function Chats() {
   const [search, setSearch] = useState('')
