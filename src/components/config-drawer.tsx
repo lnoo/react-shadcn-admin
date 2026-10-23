@@ -150,7 +150,7 @@ function RadioGroupItem({
     <Item
       value={item.value}
       className={cn('group outline-none', 'transition duration-200 ease-in')}
-      aria-label={`Select ${item.label.toLowerCase()}`}
+      aria-label={`选择${item.label}`}
       aria-describedby={`${item.value}-description`}
     >
       <div
@@ -161,7 +161,7 @@ function RadioGroupItem({
         )}
         role='img'
         aria-hidden='false'
-        aria-label={`${item.label} option preview`}
+        aria-label={`${item.label}选项预览`}
       >
         <CircleCheck
           className={cn(

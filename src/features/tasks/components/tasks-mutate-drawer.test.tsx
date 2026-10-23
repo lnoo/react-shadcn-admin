@@ -125,7 +125,7 @@ describe('TasksMutateDrawer', () => {
       <TasksMutateDrawer open onOpenChange={onOpenChange} />
     )
 
-    const closeButton = getByRole('button', { name: /关闭/i })
+    const closeButton = getByRole('button', { name: '关闭', exact: true })
 
     await userEvent.click(closeButton)
 
@@ -165,7 +165,7 @@ describe('TasksMutateDrawer', () => {
     await userEvent.click(priorityRadio)
     await expect.element(priorityRadio).toBeChecked()
 
-    const closeButton = getByRole('button', { name: /关闭/i })
+    const closeButton = getByRole('button', { name: '关闭', exact: true })
     await userEvent.click(closeButton)
 
     const reopenButton = getByRole('button', { name: /重新打开/i })

@@ -163,11 +163,11 @@ export function DataTableBulkActions<TData>({
                 size='icon'
                 onClick={handleClearSelection}
                 className='size-6 rounded-full'
-                aria-label='Clear selection'
-                title='Clear selection (Escape)'
+                aria-label='清除选择'
+                title='清除选择 (Esc)'
               >
                 <X />
-                <span className='sr-only'>Clear selection</span>
+                <span className='sr-only'>清除选择</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>

@@ -4,8 +4,8 @@ import { DisplayForm } from './display-form'
 export function SettingsDisplay() {
   return (
     <ContentSection
-      title='Display'
-      desc="Turn items on or off to control what's displayed in the app."
+      title='显示'
+      desc='开启或关闭项目，以控制在应用中显示的内容。'
     >
       <DisplayForm />
     </ContentSection>

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { formatDistanceToNow } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
 import { MessageSquarePlus, MessagesSquare, Trash2 } from 'lucide-react'
 import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
@@ -89,6 +90,7 @@ export function AiChatConversationList({ className }: AiChatConversationListProp
                   <span className='block text-xs text-muted-foreground'>
                     {formatDistanceToNow(conversation.updatedAt, {
                       addSuffix: true,
+                      locale: zhCN,
                     })}
                   </span>
                 </button>

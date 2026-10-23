@@ -65,14 +65,14 @@ export const Route = createRootRouteWithContext<{
       { name: 'title', content: 'Shadcn Admin' },
       {
         name: 'description',
-        content: 'Admin Dashboard UI built with Shadcn and TanStack Router.',
+        content: '基于 shadcn/ui 和 TanStack Router 构建的管理后台 UI。',
       },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: 'https://shadcn-admin.netlify.app' },
       { property: 'og:title', content: 'Shadcn Admin' },
       {
         property: 'og:description',
-        content: 'Admin Dashboard UI built with Shadcn and TanStack Router.',
+        content: '基于 shadcn/ui 和 TanStack Router 构建的管理后台 UI。',
       },
       {
         property: 'og:image',
@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{
       { property: 'twitter:title', content: 'Shadcn Admin' },
       {
         property: 'twitter:description',
-        content: 'Admin Dashboard UI built with Shadcn and TanStack Router.',
+        content: '基于 shadcn/ui 和 TanStack Router 构建的管理后台 UI。',
       },
       {
         property: 'twitter:image',

@@ -41,7 +41,7 @@ function createQueryClient({
 
           if (error instanceof AxiosError) {
             if (error.response?.status === 304) {
-              toast.error('Content not modified!')
+              toast.error('内容未修改！')
             }
           }
         },
@@ -51,12 +51,12 @@ function createQueryClient({
       onError: (error) => {
         if (error instanceof AxiosError) {
           if (error.response?.status === 401) {
-            toast.error('Session expired!')
+            toast.error('会话已过期！')
             useAuthStore.getState().auth.reset()
             onSessionExpired()
           }
           if (error.response?.status === 500) {
-            toast.error('Internal Server Error!')
+            toast.error('服务器内部错误！')
             onInternalServerError()
           }
           if (error.response?.status === 403) {

@@ -22,7 +22,7 @@ describe('TasksImportDialog', () => {
     })
     const desc = getByText('从 CSV 文件快速导入任务')
     const fileInput = getByLabelText('文件')
-    const closeButton = getByRole('button', { name: '关闭' })
+    const closeButton = getByRole('button', { name: '关闭', exact: true })
 
     const importButton = getByRole('button', { name: /^导入$/i })
 
@@ -96,7 +96,8 @@ describe('TasksImportDialog', () => {
     const { getByRole } = await render(<Harness />)
 
     const closeButtonX = getByRole('button', {
-      name: /关闭/i,
+      name: '关闭',
+      exact: true,
     })
     await userEvent.click(closeButtonX)
 
@@ -106,7 +107,8 @@ describe('TasksImportDialog', () => {
 
     await userEvent.click(getByRole('button', { name: /重新打开/i }))
     const closeButton = getByRole('button', {
-      name: /关闭/i,
+      name: '关闭',
+      exact: true,
     })
     await userEvent.click(closeButton)
 

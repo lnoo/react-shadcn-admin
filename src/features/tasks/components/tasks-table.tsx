@@ -113,16 +113,16 @@ export function TasksTable({ data }: DataTableProps) {
     >
       <DataTableToolbar
         table={table}
-        searchPlaceholder='Filter by title or ID...'
+        searchPlaceholder='按标题或 ID 筛选...'
         filters={[
           {
             columnId: 'status',
-            title: 'Status',
+            title: '状态',
             options: statuses,
           },
           {
             columnId: 'priority',
-            title: 'Priority',
+            title: '优先级',
             options: priorities,
           },
         ]}
@@ -183,7 +183,7 @@ export function TasksTable({ data }: DataTableProps) {
                   colSpan={columns.length}
                   className='h-24 text-center'
                 >
-                  No results.
+                  暂无数据。
                 </TableCell>
               </TableRow>
             )}
