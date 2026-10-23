@@ -70,6 +70,8 @@ If you want to update components using the Shadcn CLI (e.g., `npx shadcn@latest 
 
 **Icons:** [Lucide Icons](https://lucide.dev/icons/), [Tabler Icons](https://tabler.io/icons) (Brand icons only)
 
+**Mock Data:** [Mirage JS](https://miragejs.com) + [Faker JS](https://fakerjs.dev)
+
 ## Run Locally
 
 Clone the project
@@ -95,6 +97,32 @@ Start the server
 ```bash
   bun run dev
 ```
+
+## Mock 数据
+
+项目内置**纯前端 mock 系统**（`src/mocks/`，基于 [Mirage JS](https://miragejs.com) + [Faker JS](https://fakerjs.dev)）：拦截 `/api/**` 请求并在浏览器内返回数据，无需部署任何后端服务，生产构建同样可用。
+
+- **开发环境**：默认开启，设置 `VITE_ENABLE_MOCK=false` 可关闭。
+- **生产构建**：默认关闭，构建前设置 `VITE_ENABLE_MOCK=true` 即可启用“生产环境 mock”。
+
+```bash
+# 生产环境启用 mock
+VITE_ENABLE_MOCK=true bun run build
+```
+
+内置接口（详见 `src/mocks/routes/`）：
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `GET` | `/api/users` | 用户列表，支持 `q`/`status`/`role` 过滤与 `page`/`pageSize` 分页 |
+| `GET/POST` | `/api/users/:id` | 用户详情 / 创建 |
+| `PATCH/DELETE` | `/api/users/:id` | 用户更新 / 删除 |
+| `GET` | `/api/tasks` | 任务列表，支持 `q`/`status`/`priority` 过滤与分页 |
+| `GET/POST/PATCH/DELETE` | `/api/tasks/:id` | 任务详情 / 创建 / 更新 / 删除 |
+| `GET` | `/api/dashboard/overview` | 跨模型数据聚合（用户/任务状态与优先级统计） |
+
+前端统一通过 `src/lib/api`（axios 实例，`baseURL: /api`）+ TanStack Query 访问接口；
+新增 mock 数据的最佳实践见 `AGENTS.md` 的「Mock Data Rules」。
 
 ## Static Deployment
 

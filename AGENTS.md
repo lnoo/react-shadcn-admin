@@ -26,6 +26,7 @@ It provides a production-ready foundation for building client-rendered B2B appli
 * `src/components/layout/` - shared layout components
 * `src/lib/` - shared helpers
 * `src/stores/` - app stores
+* `src/mocks/` - frontend mock system (Mirage JS + Faker JS)
 
 ## Starter / Template Principles
 
@@ -57,6 +58,17 @@ This repository is intended to be **copied, extended, and adapted for different 
 * Avoid unnecessary abstractions for small or isolated changes.
 * Preserve unrelated dirty work.
 * Do not rewrite history, reset, clean, or discard changes unless explicitly requested.
+
+## Mock Data Rules
+
+本项目使用 **Mirage JS + Faker JS**（`src/mocks/`）作为纯前端 mock 系统：拦截 `/api/**` 的 XHR 请求，无需部署任何后端服务。需要模拟数据/接口时，**优先使用这套 mock 系统**，并遵循以下最佳实践：
+
+* 新增 mock 数据时，在 `src/mocks/factories.ts` 添加/扩展 Factory，在 `src/mocks/routes/` 添加路由处理器；**不要**再新建静态数组 mock 文件或绕过 mock 系统硬编码数据。
+* Factory 使用 `fakerZH_CN` 生成中文演示数据；字段必须与对应 feature 的 zod schema 一致（用户名/邮箱等登录标识可用 ASCII）。
+* Mirage 路由支持路径参数、查询参数与 REST 动词（`GET/POST/PATCH/DELETE`），参考 `src/mocks/routes/users.ts`；跨模型统计请实现聚合路由（参考 `src/mocks/routes/dashboard.ts`），不要在前端拼接多次请求做聚合。
+* 前端通过 `@/lib/api`（axios 实例，`baseURL: /api`）+ TanStack Query 访问接口；组件不得直接 import mock 数据。Mirage 只拦截 XHR，原生 `fetch` 不会被拦截。
+* Mock 开关见 `src/mocks/config.ts`：开发环境默认开启（`VITE_ENABLE_MOCK=false` 可关闭）；生产构建默认关闭，设为 `VITE_ENABLE_MOCK=true` 启用"生产环境 mock"。
+* mock 代码必须在接口请求发起前启动（见 `src/main.tsx` 的 bootstrap），且保持独立分包（不要在非 mock 模块中静态 import `src/mocks/server.ts`）。
 
 ## Verification
 
