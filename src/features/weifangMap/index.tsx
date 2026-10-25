@@ -20,7 +20,11 @@ import {
   globeOrientation,
   nearestAngle,
 } from './lib/globe-orientation'
-import { loadDistrictOsmDetail } from './lib/osm'
+import {
+  loadDistrictOsmCore,
+  loadDistrictOsmDetail,
+  preloadDistrictOsmCore,
+} from './lib/osm'
 import { loadTexture } from './lib/texture'
 import {
   createGlobeScene,
@@ -83,20 +87,51 @@ export default function WeifangMap() {
   const [selectedDetail, setSelectedDetail] =
     useState<DistrictOsmDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [detailEnhancing, setDetailEnhancing] = useState(false)
   const selectedCodeRef = useRef<number | null>(null)
+  const detailRequestRef = useRef(0)
 
   const handleSelectDistrict = useCallback((adcode: number) => {
+    const requestId = detailRequestRef.current + 1
+    detailRequestRef.current = requestId
     selectedCodeRef.current = adcode
     setSelectedCode(adcode)
     setSelectedDetail(null)
     setDetailLoading(true)
+    setDetailEnhancing(false)
 
-    loadDistrictOsmDetail(adcode).then((detail) => {
-      if (selectedCodeRef.current !== adcode) return
-      setSelectedDetail(detail)
+    // 先用核心区数据把下钻画面立起来，再在后台换成覆盖全区的数据。
+    loadDistrictOsmCore(adcode).then((core) => {
+      if (
+        selectedCodeRef.current !== adcode ||
+        detailRequestRef.current !== requestId
+      ) {
+        return
+      }
       setDetailLoading(false)
-      mapRef.current?.setDistrictDetail(detail)
+      if (core) {
+        setSelectedDetail(core)
+        mapRef.current?.setDistrictDetail(core)
+      }
+      setDetailEnhancing(true)
+
+      loadDistrictOsmDetail(adcode).then((full) => {
+        if (
+          selectedCodeRef.current !== adcode ||
+          detailRequestRef.current !== requestId
+        ) {
+          return
+        }
+        setDetailEnhancing(false)
+        if (!full) return
+        setSelectedDetail(full)
+        if (full !== core) mapRef.current?.setDistrictDetail(full)
+      })
     })
+  }, [])
+
+  const handleDistrictHover = useCallback((adcode: number) => {
+    preloadDistrictOsmCore(adcode)
   }, [])
 
   // 3D 地球场景
@@ -141,6 +176,7 @@ export default function WeifangMap() {
       features: GEOJSON.features,
       districts: DISTRICTS,
       onSelect: handleSelectDistrict,
+      onDistrictHover: handleDistrictHover,
     })
     mapRef.current = controller
 
@@ -180,7 +216,7 @@ export default function WeifangMap() {
       controller.dispose()
       if (mapRef.current === controller) mapRef.current = null
     }
-  }, [handleSelectDistrict])
+  }, [handleSelectDistrict, handleDistrictHover])
 
   useEffect(() => {
     mapRef.current?.setVisualMode(visualMode)
@@ -207,6 +243,7 @@ export default function WeifangMap() {
     selectedCodeRef.current = null
     setSelectedDetail(null)
     setDetailLoading(false)
+    setDetailEnhancing(false)
 
     const globeHost = globe.host
     const mapHost = map.host
@@ -316,6 +353,7 @@ export default function WeifangMap() {
     selectedCodeRef.current = null
     setSelectedDetail(null)
     setDetailLoading(false)
+    setDetailEnhancing(false)
     map.clearSelection(false)
 
     const globeHost = globe.host
@@ -410,6 +448,7 @@ export default function WeifangMap() {
     setSelectedCode(null)
     setSelectedDetail(null)
     setDetailLoading(false)
+    setDetailEnhancing(false)
     mapRef.current?.clearSelection(true)
   }, [])
 
@@ -418,6 +457,7 @@ export default function WeifangMap() {
     setSelectedCode(null)
     setSelectedDetail(null)
     setDetailLoading(false)
+    setDetailEnhancing(false)
     mapRef.current?.resetView(true)
   }, [])
 
@@ -545,6 +585,7 @@ export default function WeifangMap() {
               visualMode={visualMode}
               detail={selectedDetail}
               loading={detailLoading}
+              enhancing={detailEnhancing}
               onClose={closeDistrict}
               onReset={resetMapView}
             />

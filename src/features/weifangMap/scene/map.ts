@@ -33,6 +33,8 @@ export interface MapSceneOptions {
   features: WeifangFeature[]
   districts: DistrictEmission[]
   onSelect: (adcode: number) => void
+  /** 悬停区县时用于预取 OSM 细节，只在悬停切换时触发 */
+  onDistrictHover?: (adcode: number) => void
 }
 
 export interface MapSceneController {
@@ -644,6 +646,7 @@ export function createMapScene(
   let introActive = false
   let detailLayer: DetailLayer | null = null
   let companyLayer: CompanyLayer | null = null
+  let companyAdcode: number | null = null
   let pointerDownX = 0
   let pointerDownY = 0
   let pointerPressed = false
@@ -842,17 +845,21 @@ export function createMapScene(
     paintDistricts()
   }
 
+  function disposeOsmLayer() {
+    if (!detailLayer) return
+    mapRoot.remove(detailLayer.group)
+    detailLayer.dispose()
+    detailLayer = null
+  }
+
   function disposeDetailLayers() {
-    if (detailLayer) {
-      mapRoot.remove(detailLayer.group)
-      detailLayer.dispose()
-      detailLayer = null
-    }
+    disposeOsmLayer()
     if (companyLayer) {
       mapRoot.remove(companyLayer.group)
       companyLayer.dispose()
       companyLayer = null
     }
+    companyAdcode = null
     tooltip.visible = false
     tooltipElement.style.display = 'none'
   }
@@ -948,7 +955,9 @@ export function createMapScene(
     )
     if (!entry) return
 
-    disposeDetailLayers()
+    // 核心区数据与全区数据分两批到达：只替换 OSM 图层，
+    // 企业柱体/标签保持不变，避免第二批数据到达时整层重建导致闪烁。
+    disposeOsmLayer()
     setDetailLimits()
     if (detail) {
       detailLayer = createOsmDetailLayer(detail, entry.feature, {
@@ -957,12 +966,21 @@ export function createMapScene(
       })
       mapRoot.add(detailLayer.group)
     }
-    companyLayer = createCompanyLayer(
-      entry.district.companies,
-      Math.max(...entry.district.companies.map((company) => company.emissions))
-    )
+    if (!companyLayer || companyAdcode !== entry.district.adcode) {
+      if (companyLayer) {
+        mapRoot.remove(companyLayer.group)
+        companyLayer.dispose()
+      }
+      companyLayer = createCompanyLayer(
+        entry.district.companies,
+        Math.max(
+          ...entry.district.companies.map((company) => company.emissions)
+        )
+      )
+      companyAdcode = entry.district.adcode
+      mapRoot.add(companyLayer.group)
+    }
     companyLayer.setMode(visualMode)
-    mapRoot.add(companyLayer.group)
     setDetailVisualState(true)
   }
 
@@ -1047,6 +1065,7 @@ export function createMapScene(
     if (nextHovered !== hoveredAdcode) {
       hoveredAdcode = nextHovered
       paintDistricts()
+      if (nextHovered !== null) options.onDistrictHover?.(nextHovered)
     }
   }
 

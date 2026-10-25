@@ -383,6 +383,7 @@ interface DistrictHudProps {
   visualMode: VisualMode
   detail: DistrictOsmDetail | null
   loading: boolean
+  enhancing: boolean
   onClose: () => void
   onReset: () => void
 }
@@ -394,6 +395,7 @@ export function DistrictHud({
   visualMode,
   detail,
   loading,
+  enhancing,
   onClose,
   onReset,
 }: DistrictHudProps) {
@@ -511,6 +513,12 @@ export function DistrictHud({
             OSM 建筑 {detail.buildings.length.toLocaleString('zh-CN')} · 水系{' '}
             {detail.water.length + detail.rivers.length} · 铁路{' '}
             {detail.railways.length}
+            {enhancing && (
+              <span className='flex items-center gap-1 text-cyan-300/70'>
+                <LoaderCircle className='size-3 animate-spin' />
+                加载全区细节…
+              </span>
+            )}
           </span>
         ) : (
           <span>OSM 细节暂不可用，已使用企业点位</span>
