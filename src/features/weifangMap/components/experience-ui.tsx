@@ -516,7 +516,7 @@ export function DistrictHud({
           <span>OSM 细节暂不可用，已使用企业点位</span>
         )}
         <span className='ml-auto hidden text-slate-600 md:inline'>
-          点击空白处返回全景
+          拖拽平移 · 右键旋转 · Esc 返回全景
         </span>
       </div>
     </section>
@@ -528,8 +528,8 @@ export function MapHint({ detailMode }: { detailMode?: boolean }) {
     <div className='pointer-events-none absolute bottom-5 left-[54%] z-30 hidden -translate-x-1/2 items-center gap-2 rounded-full border border-white/8 bg-[#030913]/70 px-4 py-2 text-[11px] text-slate-400 backdrop-blur-md md:flex'>
       <Move3d className='size-3.5 text-cyan-300' />
       {detailMode
-        ? '拖拽旋转 · 滚轮缩放 · 悬停柱体查看企业 · 点击空白返回'
-        : '拖拽旋转 · 滚轮缩放 · 点击区县下钻 OSM 城市细节'}
+        ? '拖拽平移 · 右键旋转 · 滚轮缩放 · 悬停柱体查看企业 · Esc 返回全景'
+        : '拖拽平移 · 右键旋转 · 滚轮缩放 · 点击区县下钻 OSM 城市细节'}
     </div>
   )
 }

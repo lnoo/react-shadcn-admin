@@ -10,6 +10,11 @@ export async function loadTexture(
   texture.anisotropy = anisotropy
   texture.wrapS = THREE.ClampToEdgeWrapping
   texture.wrapT = THREE.ClampToEdgeWrapping
+  // 明确使用三线性 mipmap：远景缩小时由低级别 mip 平滑过渡，
+  // 避免高分辨率卫星纹理在缩放过程中出现摩尔纹闪烁。
+  texture.minFilter = THREE.LinearMipmapLinearFilter
+  texture.magFilter = THREE.LinearFilter
+  texture.generateMipmaps = true
   texture.needsUpdate = true
   return texture
 }

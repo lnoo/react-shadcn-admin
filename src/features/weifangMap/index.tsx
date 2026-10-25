@@ -99,13 +99,6 @@ export default function WeifangMap() {
     })
   }, [])
 
-  const handleBackgroundClick = useCallback(() => {
-    selectedCodeRef.current = null
-    setSelectedCode(null)
-    setSelectedDetail(null)
-    setDetailLoading(false)
-  }, [])
-
   // 3D 地球场景
   useEffect(() => {
     const host = globeHostRef.current
@@ -148,7 +141,6 @@ export default function WeifangMap() {
       features: GEOJSON.features,
       districts: DISTRICTS,
       onSelect: handleSelectDistrict,
-      onBackgroundClick: handleBackgroundClick,
     })
     mapRef.current = controller
 
@@ -188,7 +180,7 @@ export default function WeifangMap() {
       controller.dispose()
       if (mapRef.current === controller) mapRef.current = null
     }
-  }, [handleBackgroundClick, handleSelectDistrict])
+  }, [handleSelectDistrict])
 
   useEffect(() => {
     mapRef.current?.setVisualMode(visualMode)

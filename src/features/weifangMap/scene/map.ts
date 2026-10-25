@@ -33,7 +33,6 @@ export interface MapSceneOptions {
   features: WeifangFeature[]
   districts: DistrictEmission[]
   onSelect: (adcode: number) => void
-  onBackgroundClick: () => void
 }
 
 export interface MapSceneController {
@@ -65,6 +64,8 @@ const OVERVIEW_MAX_DISTANCE = 2200
 const DETAIL_MIN_DISTANCE = 2.4
 const DETAIL_MAX_DISTANCE = 58
 const DETAIL_CAMERA_DISTANCE = 9
+/** 拖拽超过该像素距离视为平移，而不是点击 */
+const DRAG_CLICK_THRESHOLD = 4
 
 /** 中心城区标注较密，手动错开，避免文字相互遮挡 */
 const LABEL_OFFSETS: Record<string, [number, number]> = {
@@ -249,7 +250,9 @@ export function createMapScene(
   options: MapSceneOptions
 ): MapSceneController {
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 30_000)
+  // 近裁剪面不要贴得太近：地图尺度跨度很大（近景 2.4 ~ 远景 2200），
+  // 过小的 near 会让远景深度精度跌到数米，导致贴图层与挤出体闪烁。
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 30_000)
   const mapRoot = new THREE.Group()
   mapRoot.rotation.x = -Math.PI / 2
   scene.add(mapRoot)
@@ -294,7 +297,9 @@ export function createMapScene(
     opacity: 1,
     alphaMap: maskTexture,
     alphaTest: 0.08,
-    depthWrite: true,
+    // 底图与下方世界地图/高清层几乎共面，写入深度会在缩放时产生
+    // z-fighting（贴图忽隐忽现）。背景层统一按 renderOrder 叠加。
+    depthWrite: false,
     toneMapped: false,
   })
   const baseMesh = new THREE.Mesh(
@@ -499,6 +504,17 @@ export function createMapScene(
   controls.zoomSpeed = 0.75
   controls.panSpeed = 0.6
   controls.screenSpacePanning = false
+  controls.enablePan = true
+  // 左键 / 单指拖拽平移（支持水平拖动），右键拖拽旋转，滚轮 / 双指缩放
+  controls.mouseButtons = {
+    LEFT: THREE.MOUSE.PAN,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.ROTATE,
+  }
+  controls.touches = {
+    ONE: THREE.TOUCH.PAN,
+    TWO: THREE.TOUCH.DOLLY_PAN,
+  }
   controls.minDistance = OVERVIEW_MIN_DISTANCE
   controls.maxDistance = OVERVIEW_MAX_DISTANCE
   controls.minPolarAngle = 0.5
@@ -517,6 +533,10 @@ export function createMapScene(
   let introActive = false
   let detailLayer: DetailLayer | null = null
   let companyLayer: CompanyLayer | null = null
+  let pointerDownX = 0
+  let pointerDownY = 0
+  let pointerPressed = false
+  let pointerDragged = false
 
   const tooltipElement = createTooltipElement()
   const tooltip = new CSS2DObject(tooltipElement)
@@ -680,15 +700,17 @@ export function createMapScene(
 
   function setDetailVisualState(enabled: boolean) {
     detailMode = enabled
-    const overviewOpacity = enabled ? 0.16 : 1
-    const tintOpacity = enabled ? 0.72 : 0.18
-    const glowOpacity = enabled ? 0.16 : 0.45
+    // 下钻时仍以卫星影像为底，只轻微压暗以突出 OSM 矢量，
+    // 避免整屏变成纯黑，与 2.5D 总览风格保持一致。
+    const overviewOpacity = enabled ? 0.98 : 1
+    const tintOpacity = enabled ? 0.16 : 0.18
+    const glowOpacity = enabled ? 0.32 : 0.45
     gsap.to(baseMaterial, { opacity: overviewOpacity, duration: 0.65 })
     gsap.to(tintMaterial, { opacity: tintOpacity, duration: 0.65 })
     gsap.to(glowMaterial, { opacity: glowOpacity, duration: 0.65 })
     const worldOpacity = { value: worldMap.getOpacity() }
     gsap.to(worldOpacity, {
-      value: enabled ? 0.06 : 0.55,
+      value: enabled ? 0.22 : 0.55,
       duration: 0.65,
       onUpdate: () => worldMap.setOpacity(worldOpacity.value),
     })
@@ -807,7 +829,10 @@ export function createMapScene(
     disposeDetailLayers()
     setDetailLimits()
     if (detail) {
-      detailLayer = createOsmDetailLayer(detail, entry.feature)
+      detailLayer = createOsmDetailLayer(detail, entry.feature, {
+        x: entry.center.x,
+        y: entry.center.y,
+      })
       mapRoot.add(detailLayer.group)
     }
     companyLayer = createCompanyLayer(
@@ -821,6 +846,10 @@ export function createMapScene(
 
   function handlePointerDown(event: PointerEvent) {
     if (event.button !== 0) return
+    pointerPressed = true
+    pointerDragged = false
+    pointerDownX = event.clientX
+    pointerDownY = event.clientY
     renderer.domElement.style.cursor = 'grabbing'
   }
 
@@ -858,32 +887,30 @@ export function createMapScene(
 
   function handlePointerUp(event: PointerEvent) {
     if (event.button !== 0) return
+    const dragged = pointerDragged
+    pointerPressed = false
+    pointerDragged = false
     renderer.domElement.style.cursor = 'grab'
-    if (controls.enabled === false || introActive) return
+    if (dragged || controls.enabled === false || introActive) return
     if (detailMode) {
+      // 下钻后点击空白保持当前区县视图，只处理企业点位，避免误退出
       const company = pickCompany(event)
-      if (company) {
-        showTooltip(company)
-        return
-      }
-      if (selectedAdcode !== null) clearSelection(true)
-      options.onBackgroundClick()
+      if (company) showTooltip(company)
+      else hideTooltip()
       return
     }
     const entry = pickDistrict(event)
-    if (entry) {
-      if (entry.district.adcode !== selectedAdcode) {
-        selectDistrictByUser(entry.district.adcode)
-      }
-      return
-    }
-    if (selectedAdcode !== null) {
-      clearSelection(true)
-      options.onBackgroundClick()
-    }
+    if (entry) selectDistrictByUser(entry.district.adcode)
   }
 
   function handlePointerMove(event: PointerEvent) {
+    if (pointerPressed && event.buttons !== 0) {
+      const distance = Math.hypot(
+        event.clientX - pointerDownX,
+        event.clientY - pointerDownY
+      )
+      if (distance > DRAG_CLICK_THRESHOLD) pointerDragged = true
+    }
     if (event.buttons !== 0 || introActive) return
     if (detailMode) {
       const company = pickCompany(event)
@@ -938,11 +965,51 @@ export function createMapScene(
   applyWholeView(false)
   paintDistricts()
 
+  /** 限制平移范围，避免把地图拖出视野 */
+  function clampPanTarget() {
+    if (!controls.enabled) return
+    let centerX = 0
+    let centerZ = 0
+    let limitX = MAP_WIDTH * 0.55
+    let limitZ = MAP_HEIGHT * 0.55
+    if (detailMode) {
+      const entry = entries.find(
+        (item) => item.district.adcode === selectedAdcode
+      )
+      if (entry) {
+        const radius = Math.min(Math.max(entry.radius * 1.1, 2.5), 8)
+        centerX = entry.center.x
+        centerZ = -entry.center.y
+        limitX = radius
+        limitZ = radius
+      }
+    }
+    const target = controls.target
+    const nextX = THREE.MathUtils.clamp(
+      target.x,
+      centerX - limitX,
+      centerX + limitX
+    )
+    const nextZ = THREE.MathUtils.clamp(
+      target.z,
+      centerZ - limitZ,
+      centerZ + limitZ
+    )
+    const deltaX = nextX - target.x
+    const deltaZ = nextZ - target.z
+    if (deltaX === 0 && deltaZ === 0) return
+    target.x = nextX
+    target.z = nextZ
+    camera.position.x += deltaX
+    camera.position.z += deltaZ
+  }
+
   const clock = new THREE.Clock()
   const renderFrame = () => {
     animationFrame = requestAnimationFrame(renderFrame)
     const delta = Math.min(clock.getDelta(), 0.05)
     controls.update()
+    clampPanTarget()
     worldMap.update(delta, camera.position.distanceTo(controls.target))
     renderer.render(scene, camera)
     labelRenderer.render(scene, camera)
@@ -1067,7 +1134,7 @@ export function createMapScene(
 
   const setBaseTexture = (texture: THREE.Texture) => {
     texture.colorSpace = THREE.SRGBColorSpace
-    texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy())
+    texture.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy())
     texture.needsUpdate = true
     baseMaterial.map = texture
     baseMaterial.needsUpdate = true

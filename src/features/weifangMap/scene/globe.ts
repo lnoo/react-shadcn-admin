@@ -213,7 +213,7 @@ export function createGlobeScene(host: HTMLElement): GlobeSceneController {
   const setWorldTexture = (texture: THREE.Texture) => {
     texture.colorSpace = THREE.SRGBColorSpace
     texture.anisotropy = Math.min(
-      8,
+      16,
       renderer.capabilities.getMaxAnisotropy()
     )
     texture.needsUpdate = true

@@ -136,7 +136,11 @@ export function createWorldMap(options: {
     color: 0x8da0b3,
     transparent: true,
     opacity: 0.92,
-    depthWrite: true,
+    // 底图与区域高清层仅相差 0.04~2.4 个世界单位，在远景（相机距离
+    // 1000+）时深度缓冲精度不足以区分，若写入深度会让高清层在缩放时
+    // 被底层反复遮挡而闪烁。这里统一关闭背景平面深度写入，由 renderOrder
+    // 固定绘制顺序；前景挤出体仍通过深度测试正常遮挡底图。
+    depthWrite: false,
     toneMapped: false,
     side: THREE.DoubleSide,
   })
@@ -152,7 +156,7 @@ export function createWorldMap(options: {
   ) => {
     texture.colorSpace = THREE.SRGBColorSpace
     texture.anisotropy = Math.min(
-      8,
+      16,
       options.renderer.capabilities.getMaxAnisotropy()
     )
     texture.needsUpdate = true
@@ -285,7 +289,7 @@ export function createWorldMap(options: {
   const setTexture = (texture: THREE.Texture) => {
     texture.colorSpace = THREE.SRGBColorSpace
     texture.anisotropy = Math.min(
-      8,
+      16,
       options.renderer.capabilities.getMaxAnisotropy()
     )
     texture.needsUpdate = true

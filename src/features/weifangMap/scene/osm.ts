@@ -129,10 +129,12 @@ function createDetailGround(): { mesh: THREE.Mesh; texture: THREE.CanvasTexture 
     size / 2,
     size * 0.5
   )
-  gradient.addColorStop(0, 'rgba(6,19,34,0.92)')
-  gradient.addColorStop(0.55, 'rgba(4,14,27,0.72)')
-  gradient.addColorStop(0.82, 'rgba(3,10,20,0.28)')
-  gradient.addColorStop(1, 'rgba(3,10,20,0)')
+  // 只做轻微压暗并带一点科技蓝，保留卫星底图作为地面，
+  // 避免下钻后变成纯黑背景，与 2.5D 总览风格保持一致
+  gradient.addColorStop(0, 'rgba(8,34,58,0.38)')
+  gradient.addColorStop(0.55, 'rgba(6,25,44,0.26)')
+  gradient.addColorStop(0.82, 'rgba(4,16,30,0.1)')
+  gradient.addColorStop(1, 'rgba(4,16,30,0)')
   context.fillStyle = gradient
   context.fillRect(0, 0, size, size)
   const texture = new THREE.CanvasTexture(canvas)
@@ -142,7 +144,7 @@ function createDetailGround(): { mesh: THREE.Mesh; texture: THREE.CanvasTexture 
     new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
-      opacity: 1,
+      opacity: 0.55,
       depthWrite: false,
       toneMapped: false,
     })
@@ -216,13 +218,17 @@ export interface DetailLayer {
 /** 生成 OSM 建筑 / 水系 / 铁路 / 道路等矢量细节 */
 export function createOsmDetailLayer(
   detail: DistrictOsmDetail,
-  feature: WeifangFeature
+  feature: WeifangFeature,
+  center: { x: number; y: number }
 ): DetailLayer {
   const group = new THREE.Group()
   group.visible = false
 
   const ground = createDetailGround()
   const localGrid = createLocalGrid()
+  // 地面与网格跟随当前下钻区县，而不是固定在世界地图原点
+  ground.mesh.position.set(center.x, center.y, 0.03)
+  localGrid.position.set(center.x, center.y, 0)
   ground.mesh.renderOrder = 1
   localGrid.renderOrder = 2
   group.add(ground.mesh, localGrid)
@@ -286,9 +292,9 @@ export function createOsmDetailLayer(
     const roadsMesh = new THREE.Mesh(
       roadsGeometry,
       new THREE.MeshBasicMaterial({
-        color: 0x64748b,
+        color: 0x93c5fd,
         transparent: true,
-        opacity: 0.28,
+        opacity: 0.34,
         depthWrite: false,
         toneMapped: false,
       })
@@ -314,14 +320,14 @@ export function createOsmDetailLayer(
     group.add(riverMesh)
   }
 
-  const railwayGeometry = createRibbonGeometry(detail.railways, 0.022, 0.21)
+  const railwayGeometry = createRibbonGeometry(detail.railways, 0.016, 0.21)
   if (railwayGeometry) {
     const railwayMesh = new THREE.Mesh(
       railwayGeometry,
       new THREE.MeshBasicMaterial({
         color: 0xfbbf24,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.55,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         toneMapped: false,
