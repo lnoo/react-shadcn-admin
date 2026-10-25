@@ -119,21 +119,22 @@ function createDetailGround(): { mesh: THREE.Mesh; texture: THREE.CanvasTexture 
   canvas.height = size
   const context = canvas.getContext('2d')
   if (!context) throw new Error('无法创建下钻地面')
-  context.fillStyle = '#000000'
-  context.fillRect(0, 0, size, size)
+  // 不铺满黑色底：只叠加一层柔和的冷色暗角，
+  // 否则贴图四角会在地图上留下明显的黑色四边形。
+  context.clearRect(0, 0, size, size)
   const gradient = context.createRadialGradient(
     size / 2,
     size / 2,
-    size * 0.08,
+    size * 0.04,
     size / 2,
     size / 2,
-    size * 0.5
+    size * 0.72
   )
   // 只做轻微压暗并带一点科技蓝，保留卫星底图作为地面，
   // 避免下钻后变成纯黑背景，与 2.5D 总览风格保持一致
-  gradient.addColorStop(0, 'rgba(8,34,58,0.38)')
-  gradient.addColorStop(0.55, 'rgba(6,25,44,0.26)')
-  gradient.addColorStop(0.82, 'rgba(4,16,30,0.1)')
+  gradient.addColorStop(0, 'rgba(8,34,58,0.4)')
+  gradient.addColorStop(0.5, 'rgba(6,25,44,0.26)')
+  gradient.addColorStop(0.8, 'rgba(4,16,30,0.09)')
   gradient.addColorStop(1, 'rgba(4,16,30,0)')
   context.fillStyle = gradient
   context.fillRect(0, 0, size, size)
