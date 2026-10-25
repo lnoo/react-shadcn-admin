@@ -73,7 +73,7 @@ export function makeMockServer(options: MockServerOptions = {}): MockServer {
     },
     routes() {
       // 未匹配的请求放行到真实网络（注意：需在设置 namespace 之前调用）
-      this.passthrough()
+      this.passthrough((request) => !request.url.startsWith('/api/'))
       this.namespace = '/api'
       registerRoutes(this)
     },
