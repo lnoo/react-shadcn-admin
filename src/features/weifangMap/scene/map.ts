@@ -66,6 +66,49 @@ const DETAIL_MAX_DISTANCE = 58
 const DETAIL_CAMERA_DISTANCE = 9
 /** 拖拽超过该像素距离视为平移，而不是点击 */
 const DRAG_CLICK_THRESHOLD = 4
+const WHITE_COLOR = new THREE.Color(0xffffff)
+/** 底图叠加的暗色科技蓝（与 tintMaterial 保持一致） */
+const BASE_TINT_COLOR = new THREE.Color(0x04101f)
+const BASE_TINT_OPACITY = 0.12
+/** 下钻时略加强压暗，突出 OSM 矢量；回到总览时恢复 BASE_TINT_OPACITY */
+const DETAIL_TINT_OPACITY = 0.16
+/** 地图外圈冷光，总览与下钻使用不同强度，避免状态切换后亮度跳变 */
+const OVERVIEW_GLOW_OPACITY = 0.55
+const DETAIL_GLOW_OPACITY = 0.35
+/**
+ * 抬升顶面位于 tintMesh 之上，不会自动吃到那层暗色叠加。
+ * 这里预先折算同样的压暗值，避免区县顶面比周围底图更亮、出现拼贴感。
+ */
+const TOP_BASE_COLOR = WHITE_COLOR.clone().lerp(
+  BASE_TINT_COLOR,
+  BASE_TINT_OPACITY
+)
+/** 侧面统一向冷色岩层靠拢：比纯黑有层次，又不会被误读成蓝色描边 */
+const SIDE_CLIFF_COLOR = new THREE.Color(0x1b333f)
+
+/**
+ * 自定义挤出 UV：把挤出几何从“世界坐标 UV”改为地图坐标归一化。
+ * 顶面因此可以直接贴卫星图，并与底图逐像素对齐；侧壁当前使用纯色渐变材质，
+ * 这里仍保留同样的归一化 UV，方便后续替换为贴图侧壁而不用改几何。
+ */
+const DISTRICT_UV_GENERATOR: THREE.UVGenerator = {
+  generateTopUV(_geometry, vertices, indexA, indexB, indexC) {
+    return [indexA, indexB, indexC].map((index) => {
+      return new THREE.Vector2(
+        vertices[index * 3] / MAP_WIDTH + 0.5,
+        vertices[index * 3 + 1] / MAP_HEIGHT + 0.5
+      )
+    })
+  },
+  generateSideWallUV(_geometry, vertices, indexA, indexB, indexC, indexD) {
+    return [indexA, indexB, indexC, indexD].map((index) => {
+      return new THREE.Vector2(
+        vertices[index * 3] / MAP_WIDTH + 0.5,
+        vertices[index * 3 + 1] / MAP_HEIGHT + 0.5
+      )
+    })
+  },
+}
 
 /** 中心城区标注较密，手动错开，避免文字相互遮挡 */
 const LABEL_OFFSETS: Record<string, [number, number]> = {
@@ -81,7 +124,7 @@ interface DistrictEntry {
   feature: WeifangFeature
   district: DistrictEmission
   mesh: THREE.Mesh
-  topMaterial: THREE.MeshStandardMaterial
+  topMaterial: THREE.MeshBasicMaterial
   sideMaterial: THREE.MeshStandardMaterial
   edgeMaterial: THREE.LineBasicMaterial
   heatColor: THREE.Color
@@ -93,6 +136,7 @@ interface DistrictEntry {
   height: number
   bar: THREE.Mesh
   barMaterial: THREE.MeshStandardMaterial
+  barGlow: THREE.Mesh
 }
 
 function ringsToPath(
@@ -193,6 +237,35 @@ function createMaskTexture(features: WeifangFeature[]): THREE.CanvasTexture {
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.NoColorSpace
   texture.anisotropy = 4
+  texture.needsUpdate = true
+  return texture
+}
+
+/** 白色径向渐变，用作柱体底部的柔和光晕（材质 color 负责染色） */
+function createSoftDiscTexture(): THREE.CanvasTexture {
+  const size = 256
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('无法创建柱体光晕画布')
+  const center = size / 2
+  const gradient = context.createRadialGradient(
+    center,
+    center,
+    0,
+    center,
+    center,
+    center
+  )
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 0.95)')
+  gradient.addColorStop(0.28, 'rgba(255, 255, 255, 0.5)')
+  gradient.addColorStop(0.62, 'rgba(255, 255, 255, 0.14)')
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
+  context.fillStyle = gradient
+  context.fillRect(0, 0, size, size)
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
   texture.needsUpdate = true
   return texture
 }
@@ -312,9 +385,9 @@ export function createMapScene(
 
   // 轻微压暗卫星底图，提升暗色大屏的可读性
   const tintMaterial = new THREE.MeshBasicMaterial({
-    color: 0x04101f,
+    color: BASE_TINT_COLOR,
     transparent: true,
-    opacity: 0.18,
+    opacity: BASE_TINT_OPACITY,
     alphaMap: maskTexture,
     alphaTest: 0.08,
     depthWrite: false,
@@ -328,6 +401,7 @@ export function createMapScene(
   tintMesh.renderOrder = 1
   mapRoot.add(tintMesh)
 
+  const barGlowTexture = createSoftDiscTexture()
   const glowTexture = createGlowTexture()
   const glowMaterial = new THREE.MeshBasicMaterial({
     map: glowTexture,
@@ -369,7 +443,9 @@ export function createMapScene(
       maxEmission > minEmission
         ? (district.emissions - minEmission) / (maxEmission - minEmission)
         : 0.5
-    const height = 1.1 + t * 3.6
+    // 抬升高度同时承担“数据分层”的作用，但对 100 单位宽的地图来说过高
+    // 会让侧面变成一圈厚重色带，压住顶面的卫星贴图，因此整体收敛一些。
+    const height = 1.05 + t * 3.2
 
     const shapes = createFeatureShapes(feature)
     const geometry = new THREE.ExtrudeGeometry(shapes, {
@@ -377,28 +453,43 @@ export function createMapScene(
       bevelEnabled: false,
       steps: 1,
       curveSegments: 1,
+      UVGenerator: DISTRICT_UV_GENERATOR,
     })
     geometry.computeVertexNormals()
     geometry.computeBoundingSphere()
 
-    const topMaterial = new THREE.MeshStandardMaterial({
-      color: neutralColor,
-      emissive: neutralColor,
-      emissiveIntensity: 0.2,
-      transparent: true,
-      opacity: 0.1,
-      roughness: 0.5,
-      metalness: 0.18,
-      side: THREE.FrontSide,
-      depthWrite: false,
+    // 侧面按高度做明暗渐变，底部更暗、顶部接近受光面，增强 2.5D 体积感
+    const positionAttribute = geometry.getAttribute('position')
+    const sideColors = new Float32Array(positionAttribute.count * 3)
+    for (let index = 0; index < positionAttribute.count; index += 1) {
+      const ratio = THREE.MathUtils.clamp(
+        positionAttribute.getZ(index) / height,
+        0,
+        1
+      )
+      const shade = 0.5 + ratio * 0.55
+      sideColors[index * 3] = shade
+      sideColors[index * 3 + 1] = shade
+      sideColors[index * 3 + 2] = shade
+    }
+    geometry.setAttribute(
+      'color',
+      new THREE.Float32BufferAttribute(sideColors, 3)
+    )
+
+    const topMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      depthWrite: true,
+      toneMapped: false,
     })
     const sideMaterial = new THREE.MeshStandardMaterial({
       color: neutralColor,
       emissive: neutralColor,
-      emissiveIntensity: 0.14,
-      roughness: 0.42,
-      metalness: 0.32,
+      emissiveIntensity: 0.16,
+      roughness: 0.62,
+      metalness: 0.06,
       side: THREE.FrontSide,
+      vertexColors: true,
       depthWrite: true,
     })
     const edgeMaterial = new THREE.LineBasicMaterial({
@@ -458,22 +549,41 @@ export function createMapScene(
     label.center.set(0.5, 1)
     mesh.add(label)
 
-    const barHeight = 0.9 + t * 3.2
+    const barHeight = 1.1 + t * 3.9
     const barMaterial = new THREE.MeshStandardMaterial({
       color: heatColor,
       emissive: heatColor,
-      emissiveIntensity: 0.65,
-      roughness: 0.35,
-      metalness: 0.25,
+      emissiveIntensity: 0.95,
+      roughness: 0.3,
+      metalness: 0.2,
     })
     const bar = new THREE.Mesh(
-      new THREE.BoxGeometry(0.26, 0.26, barHeight),
+      new THREE.BoxGeometry(0.52, 0.52, barHeight),
       barMaterial
     )
     bar.position.set(center.x, center.y, height + barHeight / 2 + 0.08)
     bar.renderOrder = 5
     bar.visible = false
     mesh.add(bar)
+
+    // 柱体底部的一圈柔光，让柱子和区县顶面有“落地”关系，而不是浮在空中
+    const barGlowMaterial = new THREE.MeshBasicMaterial({
+      map: barGlowTexture,
+      color: heatColor,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      toneMapped: false,
+    })
+    const barGlow = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.8, 1.8),
+      barGlowMaterial
+    )
+    barGlow.position.set(center.x, center.y, height + 0.04)
+    barGlow.renderOrder = 4
+    barGlow.visible = false
+    mesh.add(barGlow)
     label.position.z = height + barHeight + 0.45
 
     entries.push({
@@ -492,6 +602,7 @@ export function createMapScene(
       height,
       bar,
       barMaterial,
+      barGlow,
     })
   })
 
@@ -549,48 +660,58 @@ export function createMapScene(
       const hovered = entry.district.adcode === hoveredAdcode
       const heat = visualMode === 'heat'
       const baseColor = heat ? entry.heatColor : entry.neutralColor
-      const topOpacity = detailMode
+
+      // 顶面保留卫星贴图，只用不同强度的色调叠加表达热力 / 悬停 / 选中，
+      // 避免半透明色块把卫星纹理盖住。
+      const topTint = heat ? entry.heatColor : entry.neutralColor
+      const topTintStrength = detailMode
         ? 0
-        : selected
-          ? heat
-            ? 0.46
-            : 0.18
-          : hovered
-            ? heat
-              ? 0.3
-              : 0.14
-            : heat
-              ? 0.17
-              : 0.085
-      entry.topMaterial.color.copy(baseColor)
-      entry.topMaterial.emissive.copy(baseColor)
-      entry.topMaterial.opacity = topOpacity
-      entry.topMaterial.emissiveIntensity = selected
-        ? 1.25
-        : hovered
-          ? 0.78
-          : heat
-            ? 0.36
-            : 0.16
+        : heat
+          ? selected
+            ? 0.7
+            : hovered
+              ? 0.58
+              : 0.46
+          : selected
+            ? 0.2
+            : hovered
+              ? 0.12
+              : 0
+      entry.topMaterial.color
+        .copy(TOP_BASE_COLOR)
+        .lerp(topTint, topTintStrength)
+
+      // 侧壁用冷色岩层渐变，数据色只作为自发光染色，
+      // 避免侧壁采样卫星暗部后变成一圈黑边。
       entry.sideMaterial.color
         .copy(baseColor)
-        .multiplyScalar(0.55)
-        .lerp(new THREE.Color('#07111f'), 0.32)
-      entry.sideMaterial.emissive.copy(baseColor)
-      entry.sideMaterial.emissiveIntensity = selected ? 0.38 : 0.14
+        .multiplyScalar(0.35)
+        .lerp(SIDE_CLIFF_COLOR, 0.8)
+      entry.sideMaterial.emissive
+        .copy(baseColor)
+        .lerp(SIDE_CLIFF_COLOR, 0.35)
+      entry.sideMaterial.emissiveIntensity = selected
+        ? 0.36
+        : hovered
+          ? 0.24
+          : heat
+            ? 0.18
+            : 0.1
       entry.edgeMaterial.opacity = detailMode
         ? 0
         : selected
           ? 1
           : hovered
-            ? 0.92
-            : 0.62
+            ? 0.96
+            : 0.74
       entry.edgeMaterial.color.set(
         selected ? 0xcffafe : hovered ? 0x67e8f9 : 0x38bdf8
       )
 
       entry.mesh.visible = !detailMode
-      entry.bar.visible = !detailMode && !introActive && visualMode === 'bar'
+      const showBar = !detailMode && !introActive && visualMode === 'bar'
+      entry.bar.visible = showBar
+      entry.barGlow.visible = showBar
       entry.labelElement.classList.toggle('is-selected', selected)
       entry.labelElement.classList.toggle('is-hovered', hovered)
       entry.labelElement.classList.toggle(
@@ -613,7 +734,8 @@ export function createMapScene(
       (MAP_WIDTH * MAP_FIT_PADDING) /
       (2 * Math.tan(verticalFov / 2) * aspect)
     const distance = Math.max(fitHeight, fitWidth) * 0.92
-    const polar = 0.78
+    // 略低一点的俯角能同时看到顶面贴图和侧壁，2.5D 体积感比正俯视更强
+    const polar = 0.92
     const target = new THREE.Vector3(0, 1.4, 0)
     const position = target
       .clone()
@@ -703,8 +825,8 @@ export function createMapScene(
     // 下钻时仍以卫星影像为底，只轻微压暗以突出 OSM 矢量，
     // 避免整屏变成纯黑，与 2.5D 总览风格保持一致。
     const overviewOpacity = enabled ? 0.98 : 1
-    const tintOpacity = enabled ? 0.16 : 0.18
-    const glowOpacity = enabled ? 0.32 : 0.45
+    const tintOpacity = enabled ? DETAIL_TINT_OPACITY : BASE_TINT_OPACITY
+    const glowOpacity = enabled ? DETAIL_GLOW_OPACITY : OVERVIEW_GLOW_OPACITY
     gsap.to(baseMaterial, { opacity: overviewOpacity, duration: 0.65 })
     gsap.to(tintMaterial, { opacity: tintOpacity, duration: 0.65 })
     gsap.to(glowMaterial, { opacity: glowOpacity, duration: 0.65 })
@@ -1112,12 +1234,12 @@ export function createMapScene(
       )
       .to(
         tintMaterial,
-        { opacity: 0.18, duration: 1.1, ease: 'power2.out' },
+        { opacity: BASE_TINT_OPACITY, duration: 1.1, ease: 'power2.out' },
         2.15
       )
       .to(
         glowMaterial,
-        { opacity: 0.85, duration: 1.1, ease: 'power2.out' },
+        { opacity: OVERVIEW_GLOW_OPACITY, duration: 1.1, ease: 'power2.out' },
         2.15
       )
       .to(
@@ -1138,6 +1260,11 @@ export function createMapScene(
     texture.needsUpdate = true
     baseMaterial.map = texture
     baseMaterial.needsUpdate = true
+    // 区县抬升后的顶面直接使用同一张卫星图，纹理与底图按地图坐标对齐
+    entries.forEach((entry) => {
+      entry.topMaterial.map = texture
+      entry.topMaterial.needsUpdate = true
+    })
     hasTexture = true
   }
 
@@ -1189,6 +1316,7 @@ export function createMapScene(
     baseMaterial.map?.dispose()
     maskTexture.dispose()
     glowTexture.dispose()
+    barGlowTexture.dispose()
     worldMap.dispose()
     labelRenderer.domElement.remove()
     renderer.dispose()
