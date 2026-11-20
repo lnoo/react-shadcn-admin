@@ -20,15 +20,13 @@ export function ProfileDropdown() {
   return (
     <>
       <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
+        <DropdownMenuTrigger render={<Button variant='ghost' className='relative h-8 w-8 rounded-full'>
             <Avatar className='h-8 w-8'>
               <AvatarImage src='/avatars/01.png' alt='@shadcn' />
               <AvatarFallback>SN</AvatarFallback>
             </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-56' align='end' forceMount>
+          </Button>} />
+        <DropdownMenuContent className='w-56' align='end' keepMounted>
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col gap-1.5'>
               <p className='text-sm leading-none font-medium'>satnaing</p>
@@ -39,24 +37,18 @@ export function ProfileDropdown() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <Link to='/settings'>
+            <DropdownMenuItem render={<Link to='/settings'>
                 个人资料
                 <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to='/settings'>
+              </Link>} />
+            <DropdownMenuItem render={<Link to='/settings'>
                 订阅
                 <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to='/settings'>
+              </Link>} />
+            <DropdownMenuItem render={<Link to='/settings'>
                 设置
                 <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-              </Link>
-            </DropdownMenuItem>
+              </Link>} />
             <DropdownMenuItem>新建团队</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />

@@ -1,5 +1,6 @@
 import { type SVGProps } from 'react'
-import { RadioGroup as RadioGroupPrimitive } from 'radix-ui'
+import { RadioGroup as RadioGroupPrimitive } from '@base-ui/react/radio-group'
+import { Radio as RadioPrimitiveItem } from '@base-ui/react/radio'
 import { CircleCheck, RotateCcw, Settings } from 'lucide-react'
 import { IconLayoutCompact } from '@/assets/custom/icon-layout-compact'
 import { IconLayoutDefault } from '@/assets/custom/icon-layout-default'
@@ -39,7 +40,7 @@ import {
 } from '@/components/ui/sheet'
 import { useSidebar } from './ui/sidebar'
 
-const { Root: Radio, Item } = RadioGroupPrimitive
+const Item = RadioPrimitiveItem.Root
 
 export function ConfigDrawer() {
   const { setOpen } = useSidebar()
@@ -57,16 +58,14 @@ export function ConfigDrawer() {
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button
+      <SheetTrigger render={<Button
           size='icon'
           variant='ghost'
           aria-label='打开主题设置'
           className='rounded-full'
         >
           <Settings aria-hidden='true' />
-        </Button>
-      </SheetTrigger>
+        </Button>} />
       <SheetContent className='flex flex-col'>
         <SheetHeader className='pb-0 text-start'>
           <SheetTitle>主题设置</SheetTitle>
@@ -156,7 +155,7 @@ function RadioGroupItem({
       <div
         className={cn(
           'relative rounded-[6px] ring-[1px] ring-border',
-          'group-data-[state=checked]:shadow-2xl group-data-[state=checked]:ring-primary',
+          'group-data-checked:shadow-2xl group-data-checked:ring-primary',
           'group-focus-visible:ring-2'
         )}
         role='img'
@@ -166,7 +165,7 @@ function RadioGroupItem({
         <CircleCheck
           className={cn(
             'size-6 fill-primary stroke-white',
-            'group-data-[state=unchecked]:hidden',
+            'group-data-unchecked:hidden',
             'absolute top-0 right-0 translate-x-1/2 -translate-y-1/2'
           )}
           aria-hidden='true'
@@ -174,7 +173,7 @@ function RadioGroupItem({
         <item.icon
           className={cn(
             !isTheme &&
-            'fill-primary stroke-primary group-data-[state=unchecked]:fill-muted-foreground group-data-[state=unchecked]:stroke-muted-foreground'
+            'fill-primary stroke-primary group-data-unchecked:fill-muted-foreground group-data-unchecked:stroke-muted-foreground'
           )}
           aria-hidden='true'
         />
@@ -200,7 +199,7 @@ function ThemeConfig() {
         onReset={() => setTheme(defaultTheme)}
         resetAriaLabel='将主题偏好重置为默认值'
       />
-      <Radio
+      <RadioGroupPrimitive
         value={theme}
         onValueChange={setTheme}
         className='grid w-full max-w-md grid-cols-3 gap-4'
@@ -226,7 +225,7 @@ function ThemeConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} isTheme />
         ))}
-      </Radio>
+      </RadioGroupPrimitive>
       <div id='theme-description' className='sr-only'>
         在跟随系统、浅色模式或深色模式之间选择
       </div>
@@ -245,7 +244,7 @@ function ThemePresetConfig() {
         onReset={resetPreset}
         resetAriaLabel='将主题预设重置为默认值'
       />
-      <Radio
+      <RadioGroupPrimitive
         value={preset}
         onValueChange={setPreset}
         className='grid grid-cols-2 gap-2'
@@ -256,7 +255,7 @@ function ThemePresetConfig() {
             key={name}
             value={name}
             aria-label={`使用 ${name} 预设`}
-            className='group flex min-h-20 flex-col gap-2 rounded-md border border-border p-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=checked]:border-primary'
+            className='group flex min-h-20 flex-col gap-2 rounded-md border border-border p-3 text-start outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-checked:border-primary'
           >
             <span className='flex w-full items-center gap-1.5' aria-hidden='true'>
               {parsePresetColors(presetCssByName[name]).map(
@@ -268,12 +267,12 @@ function ThemePresetConfig() {
                   />
                 )
               )}
-              <CircleCheck className='ms-auto size-4 text-primary group-data-[state=unchecked]:invisible' />
+              <CircleCheck className='ms-auto size-4 text-primary group-data-unchecked:invisible' />
             </span>
             <span className='text-xs font-medium'>{presetDisplayNames[name]}</span>
           </Item>
         ))}
-      </Radio>
+      </RadioGroupPrimitive>
     </div>
   )
 }
@@ -322,7 +321,7 @@ function NavbarConfig() {
         onReset={() => setNavbarBehavior(defaultNavbarBehavior)}
         resetAriaLabel='将导航栏行为重置为默认值'
       />
-      <Radio
+      <RadioGroupPrimitive
         value={navbarBehavior}
         onValueChange={setNavbarBehavior}
         className='grid w-full max-w-md grid-cols-2 gap-4'
@@ -343,7 +342,7 @@ function NavbarConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
-      </Radio>
+      </RadioGroupPrimitive>
       <div id='navbar-description' className='sr-only'>
         在滚动隐藏或固定导航栏行为之间选择
       </div>
@@ -361,7 +360,7 @@ function SidebarConfig() {
         onReset={() => setVariant(defaultVariant)}
         resetAriaLabel='将侧边栏样式重置为默认值'
       />
-      <Radio
+      <RadioGroupPrimitive
         value={variant}
         onValueChange={setVariant}
         className='grid w-full max-w-md grid-cols-3 gap-4'
@@ -387,7 +386,7 @@ function SidebarConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
-      </Radio>
+      </RadioGroupPrimitive>
       <div id='sidebar-description' className='sr-only'>
         在内嵌、悬浮或标准侧边栏布局之间选择
       </div>
@@ -412,7 +411,7 @@ function LayoutConfig() {
         }}
         resetAriaLabel='将布局选项重置为默认值'
       />
-      <Radio
+      <RadioGroupPrimitive
         value={radioState}
         onValueChange={(v) => {
           if (v === 'default') {
@@ -445,7 +444,7 @@ function LayoutConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
-      </Radio>
+      </RadioGroupPrimitive>
       <div id='layout-description' className='sr-only'>
         在默认展开、紧凑仅图标或全屏布局模式之间选择
       </div>
@@ -463,7 +462,7 @@ function PageLayoutConfig() {
         onReset={() => setFluid(defaultFluid)}
         resetAriaLabel='将页面布局重置为默认值'
       />
-      <Radio
+      <RadioGroupPrimitive
         value={String(fluid)}
         onValueChange={(v) => setFluid(v === 'true')}
         className='grid w-full max-w-md grid-cols-2 gap-4'
@@ -484,7 +483,7 @@ function PageLayoutConfig() {
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
-      </Radio>
+      </RadioGroupPrimitive>
       <div id='page-layout-description' className='sr-only'>
         在居中或全宽页面内容之间选择
       </div>

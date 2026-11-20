@@ -95,8 +95,7 @@ export function AiChatConversationList({ className }: AiChatConversationListProp
                   </span>
                 </button>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
+                  <DropdownMenuTrigger render={<Button
                       type='button'
                       size='icon'
                       variant='ghost'
@@ -104,8 +103,7 @@ export function AiChatConversationList({ className }: AiChatConversationListProp
                       aria-label='对话操作'
                     >
                       <Trash2 size={14} className='text-muted-foreground' />
-                    </Button>
-                  </DropdownMenuTrigger>
+                    </Button>} />
                   <DropdownMenuContent align='end'>
                     <DropdownMenuItem
                       variant='destructive'

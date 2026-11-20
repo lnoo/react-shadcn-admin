@@ -25,8 +25,7 @@ export function AiChatWidget() {
   return (
     <div className='fixed end-6 bottom-6 z-40'>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
+        <PopoverTrigger render={<Button
             type='button'
             size='icon'
             aria-label={open ? '关闭 AI 助手' : '打开 AI 助手'}
@@ -37,8 +36,7 @@ export function AiChatWidget() {
             ) : (
               <Bot className='size-5' />
             )}
-          </Button>
-        </PopoverTrigger>
+          </Button>} />
 
         <PopoverContent
           align='end'

@@ -31,15 +31,13 @@ export function DataTableRowActions<TData>({
 
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button
+      <DropdownMenuTrigger render={<Button
           variant='ghost'
-          className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
+          className='flex h-8 w-8 p-0 data-popup-open:bg-muted'
         >
           <DotsHorizontalIcon className='h-4 w-4' />
           <span className='sr-only'>打开菜单</span>
-        </Button>
-      </DropdownMenuTrigger>
+        </Button>} />
       <DropdownMenuContent align='end' className='w-40'>
         <DropdownMenuItem
           onClick={() => {

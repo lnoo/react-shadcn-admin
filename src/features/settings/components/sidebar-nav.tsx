@@ -24,7 +24,8 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
   const navigate = useNavigate()
   const [val, setVal] = useState(pathname ?? '/settings')
 
-  const handleSelect = (e: string) => {
+  const handleSelect = (e: string | null) => {
+    if (!e) return
     setVal(e)
     navigate({ to: e })
   }
@@ -51,7 +52,6 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 
       <ScrollArea
         orientation='horizontal'
-        type='always'
         className='hidden w-full min-w-40 bg-background px-1 py-2 md:block'
       >
         <nav

@@ -157,8 +157,7 @@ export function DataTableBulkActions<TData>({
           )}
         >
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
+            <TooltipTrigger render={<Button
                 variant='outline'
                 size='icon'
                 onClick={handleClearSelection}
@@ -168,8 +167,7 @@ export function DataTableBulkActions<TData>({
               >
                 <X />
                 <span className='sr-only'>清除选择</span>
-              </Button>
-            </TooltipTrigger>
+              </Button>} />
             <TooltipContent>
               <p>清除选择 (Esc)</p>
             </TooltipContent>

@@ -78,9 +78,7 @@ export function DataTableBulkActions<TData>({
       <BulkActionsToolbar table={table} entityName='任务'>
         <DropdownMenu>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
+            <TooltipTrigger render={<DropdownMenuTrigger render={<Button
                   variant='outline'
                   size='icon'
                   className='size-8'
@@ -89,9 +87,7 @@ export function DataTableBulkActions<TData>({
                 >
                   <CircleArrowUp />
                   <span className='sr-only'>更新状态</span>
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
+                </Button>} />} />
             <TooltipContent>
               <p>更新状态</p>
             </TooltipContent>
@@ -100,7 +96,6 @@ export function DataTableBulkActions<TData>({
             {statuses.map((status) => (
               <DropdownMenuItem
                 key={status.value}
-                defaultValue={status.value}
                 onClick={() => handleBulkStatusChange(status.value)}
               >
                 {status.icon && (
@@ -114,9 +109,7 @@ export function DataTableBulkActions<TData>({
 
         <DropdownMenu>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
+            <TooltipTrigger render={<DropdownMenuTrigger render={<Button
                   variant='outline'
                   size='icon'
                   className='size-8'
@@ -125,9 +118,7 @@ export function DataTableBulkActions<TData>({
                 >
                   <ArrowUpDown />
                   <span className='sr-only'>更新优先级</span>
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
+                </Button>} />} />
             <TooltipContent>
               <p>更新优先级</p>
             </TooltipContent>
@@ -136,7 +127,6 @@ export function DataTableBulkActions<TData>({
             {priorities.map((priority) => (
               <DropdownMenuItem
                 key={priority.value}
-                defaultValue={priority.value}
                 onClick={() => handleBulkPriorityChange(priority.value)}
               >
                 {priority.icon && (
@@ -149,8 +139,7 @@ export function DataTableBulkActions<TData>({
         </DropdownMenu>
 
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
+          <TooltipTrigger render={<Button
               variant='outline'
               size='icon'
               onClick={() => handleBulkExport()}
@@ -160,16 +149,14 @@ export function DataTableBulkActions<TData>({
             >
               <Download />
               <span className='sr-only'>导出任务</span>
-            </Button>
-          </TooltipTrigger>
+            </Button>} />
           <TooltipContent>
             <p>导出任务</p>
           </TooltipContent>
         </Tooltip>
 
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
+          <TooltipTrigger render={<Button
               variant='destructive'
               size='icon'
               onClick={() => setShowDeleteConfirm(true)}
@@ -179,8 +166,7 @@ export function DataTableBulkActions<TData>({
             >
               <Trash2 />
               <span className='sr-only'>删除所选任务</span>
-            </Button>
-          </TooltipTrigger>
+            </Button>} />
           <TooltipContent>
             <p>删除所选任务</p>
           </TooltipContent>

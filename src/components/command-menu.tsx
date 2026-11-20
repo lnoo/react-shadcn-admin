@@ -32,7 +32,7 @@ export function CommandMenu() {
     <CommandDialog modal open={open} onOpenChange={setOpen}>
       <CommandInput placeholder='输入命令或搜索...' />
       <CommandList>
-        <ScrollArea type='hover' className='h-72 pe-1'>
+        <ScrollArea className='h-72 pe-1'>
           <CommandEmpty>未找到结果。</CommandEmpty>
           {sidebarData.navGroups.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>

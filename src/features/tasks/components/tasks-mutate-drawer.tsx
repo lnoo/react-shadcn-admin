@@ -199,9 +199,7 @@ export function TasksMutateDrawer({
           </form>
         </Form>
         <SheetFooter className='gap-2'>
-          <SheetClose asChild>
-            <Button variant='outline'>关闭</Button>
-          </SheetClose>
+          <SheetClose render={<Button variant='outline'>关闭</Button>} />
           <Button form='tasks-form' type='submit'>
             保存更改
           </Button>

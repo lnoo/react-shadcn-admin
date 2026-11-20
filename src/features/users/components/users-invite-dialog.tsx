@@ -136,9 +136,7 @@ export function UsersInviteDialog({
           </form>
         </Form>
         <DialogFooter className='gap-y-2'>
-          <DialogClose asChild>
-            <Button variant='outline'>取消</Button>
-          </DialogClose>
+          <DialogClose render={<Button variant='outline'>取消</Button>} />
           <Button type='submit' form='user-invite-form'>
             邀请 <Send />
           </Button>

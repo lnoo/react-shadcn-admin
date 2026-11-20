@@ -53,8 +53,7 @@ export function DataTableBulkActions<TData>({
     <>
       <BulkActionsToolbar table={table} entityName='用户'>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
+          <TooltipTrigger render={<Button
               variant='outline'
               size='icon'
               onClick={handleBulkInvite}
@@ -64,16 +63,14 @@ export function DataTableBulkActions<TData>({
             >
               <Mail />
               <span className='sr-only'>邀请所选用户</span>
-            </Button>
-          </TooltipTrigger>
+            </Button>} />
           <TooltipContent>
             <p>邀请所选用户</p>
           </TooltipContent>
         </Tooltip>
 
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
+          <TooltipTrigger render={<Button
               variant='outline'
               size='icon'
               onClick={() => handleBulkStatusChange('active')}
@@ -83,16 +80,14 @@ export function DataTableBulkActions<TData>({
             >
               <UserCheck />
               <span className='sr-only'>启用所选用户</span>
-            </Button>
-          </TooltipTrigger>
+            </Button>} />
           <TooltipContent>
             <p>启用所选用户</p>
           </TooltipContent>
         </Tooltip>
 
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
+          <TooltipTrigger render={<Button
               variant='outline'
               size='icon'
               onClick={() => handleBulkStatusChange('inactive')}
@@ -102,16 +97,14 @@ export function DataTableBulkActions<TData>({
             >
               <UserX />
               <span className='sr-only'>停用所选用户</span>
-            </Button>
-          </TooltipTrigger>
+            </Button>} />
           <TooltipContent>
             <p>停用所选用户</p>
           </TooltipContent>
         </Tooltip>
 
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
+          <TooltipTrigger render={<Button
               variant='destructive'
               size='icon'
               onClick={() => setShowDeleteConfirm(true)}
@@ -121,8 +114,7 @@ export function DataTableBulkActions<TData>({
             >
               <Trash2 />
               <span className='sr-only'>删除所选用户</span>
-            </Button>
-          </TooltipTrigger>
+            </Button>} />
           <TooltipContent>
             <p>删除所选用户</p>
           </TooltipContent>

@@ -109,8 +109,7 @@ export function AccountForm() {
             <FormItem className='flex flex-col'>
               <FormLabel>语言</FormLabel>
               <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
+                <PopoverTrigger render={<FormControl>
                     <Button
                       variant='outline'
                       role='combobox'
@@ -126,8 +125,7 @@ export function AccountForm() {
                         : '选择语言'}
                       <CaretSortIcon className='ms-2 h-4 w-4 shrink-0 opacity-50' />
                     </Button>
-                  </FormControl>
-                </PopoverTrigger>
+                  </FormControl>} />
                 <PopoverContent className='w-50 p-0'>
                   <Command>
                     <CommandInput placeholder='搜索语言...' />

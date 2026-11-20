@@ -40,8 +40,7 @@ export function DataTableFacetedFilter<TData, TValue>({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant='outline' size='sm' className='h-8 border-dashed'>
+      <PopoverTrigger render={<Button variant='outline' size='sm' className='h-8 border-dashed'>
           <PlusCircledIcon className='size-4' />
           {title}
           {selectedValues?.size > 0 && (
@@ -77,8 +76,7 @@ export function DataTableFacetedFilter<TData, TValue>({
               </div>
             </>
           )}
-        </Button>
-      </PopoverTrigger>
+        </Button>} />
       <PopoverContent className='w-50 p-0' align='start'>
         <Command>
           <CommandInput placeholder={title} />

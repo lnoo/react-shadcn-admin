@@ -43,10 +43,9 @@ export function NavUser({ user }: NavUserProps) {
       <SidebarMenu>
         <SidebarMenuItem>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
+            <DropdownMenuTrigger render={<SidebarMenuButton
                 size='lg'
-                className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+                className='data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground'
               >
                 <Avatar className='h-8 w-8 rounded-lg'>
                   <AvatarImage src={user.avatar} alt={user.name} />
@@ -57,10 +56,9 @@ export function NavUser({ user }: NavUserProps) {
                   <span className='truncate text-xs'>{user.email}</span>
                 </div>
                 <ChevronsUpDown className='ms-auto size-4' />
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
+              </SidebarMenuButton>} />
             <DropdownMenuContent
-              className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+              className='w-(--anchor-width) min-w-56 rounded-lg'
               side={isMobile ? 'bottom' : 'right'}
               align='end'
               sideOffset={4}
@@ -86,24 +84,18 @@ export function NavUser({ user }: NavUserProps) {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link to='/settings/account'>
+                <DropdownMenuItem render={<Link to='/settings/account'>
                     <BadgeCheck />
                     账户
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to='/settings'>
+                  </Link>} />
+                <DropdownMenuItem render={<Link to='/settings'>
                     <CreditCard />
                     订阅
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to='/settings/notifications'>
+                  </Link>} />
+                <DropdownMenuItem render={<Link to='/settings/notifications'>
                     <Bell />
                     通知
-                  </Link>
-                </DropdownMenuItem>
+                  </Link>} />
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem

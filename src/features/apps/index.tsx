@@ -66,7 +66,8 @@ export function Apps() {
     })
   }
 
-  const handleTypeChange = (value: AppType) => {
+  const handleTypeChange = (value: AppType | null) => {
+    if (!value) return
     setAppType(value)
     navigate({
       search: (prev) => ({
@@ -76,7 +77,8 @@ export function Apps() {
     })
   }
 
-  const handleSortChange = (sort: 'asc' | 'desc') => {
+  const handleSortChange = (sort: 'asc' | 'desc' | null) => {
+    if (!sort) return
     setSort(sort)
     navigate({ search: (prev) => ({ ...prev, sort }) })
   }
