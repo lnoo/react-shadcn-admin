@@ -1,4 +1,5 @@
 # form
+> 官方 base registry 没有 `form` 组件（内容为 `null`），因此最终仍保留本项目基于 react-hook-form 的 wrapper；中间转换步骤见下文，最终状态见 `project.md`。
 
 2026-11-20 · transformation engine. Verdict: Radix `Slot` in `FormControl` replaced with `mergeProps` + `cloneElement`; `LabelPrimitive` removed in favor of the native label wrapper.
 

@@ -34,6 +34,18 @@
 - `bun run test` — 16 files, 122 tests passed.
 - Manual smoke with Playwright at 1440×900 and 390×844: dashboard, command palette, theme dropdown, theme-settings sheet/radios, profile dropdown, tasks table, row-actions menu, create sheet + Select, view-options menu, users navigation — no console/page errors.
 
+## Final state: all UI components replaced with official base-vega registry versions
+
+2026-11-20 (follow-up): ran `shadcn add <component> --overwrite -y` for all 30 components listed by `shadcn info`. Every component in `src/components/ui/` is now the verbatim official `base-vega` registry file (IconPlaceholder resolved to Lucide by the CLI). Previous hand-migrated class strings were intentionally discarded.
+
+Exceptions / follow-up adaptations required by the official versions:
+
+- `form.tsx` — the official base registry ships no `form` component (registry content is `null`), so the project's react-hook-form wrapper remains. Migrating it to the official `Field` family would require rewriting every form and was not done.
+- `sonner.tsx` — kept official but swapped `next-themes`' `useTheme` for the project's `@/context/theme-provider` so toasts follow the app theme; `next-themes` was removed again.
+- `react-day-picker` upgraded `9.14.0` → `^10.0.2`, and registry-added `input-group.tsx` / `hooks/use-mobile.ts` were kept. The duplicate old `hooks/use-mobile.tsx` was deleted.
+- Call-site fixes: dashboard Tabs list wrapper `w-full` → `shrink-0` (official vertical tabs use a row flex layout; the old wrapper squeezed content to 96px); removed unsupported `keepMounted`, `collisionPadding`, and `ScrollArea orientation` props.
+- Styles are still the project's new-york-era CSS; official Vega-only utility classes (`cn-menu-target`, `cn-toast`, …) are not defined, but visual checks showed no regressions.
+
 ## Verify by hand
 
 - Open the theme settings sheet and switch theme/layout/font presets; confirm radio checkmarks and cookie persistence.
