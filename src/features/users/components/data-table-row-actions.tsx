@@ -1,4 +1,4 @@
-import { type Row } from '@tanstack/react-table'
+import { type AppRow } from '@/lib/table'
 import { Ellipsis as DotsHorizontalIcon, Trash2, UserPen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +13,7 @@ import { type User } from '../data/schema'
 import { useUsers } from './users-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<User>
+  row: AppRow<User>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {

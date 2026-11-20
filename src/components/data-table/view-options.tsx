@@ -1,5 +1,5 @@
 import { SlidersHorizontal as MixerHorizontalIcon } from 'lucide-react'
-import { type Table } from '@tanstack/react-table'
+import { type AppTable, type RowData } from '@/lib/table'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,11 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-type DataTableViewOptionsProps<TData> = {
-  table: Table<TData>
+type DataTableViewOptionsProps<TData extends RowData> = {
+  table: AppTable<TData>
 }
 
-export function DataTableViewOptions<TData>({
+export function DataTableViewOptions<TData extends RowData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
   return (

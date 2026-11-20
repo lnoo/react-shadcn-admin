@@ -4,7 +4,7 @@ import {
   ChevronsUpDown as CaretSortIcon,
   EyeOff as EyeNoneIcon,
 } from 'lucide-react'
-import { type Column } from '@tanstack/react-table'
+import { type AppColumn, type RowData } from '@/lib/table'
 import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,13 +15,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-type DataTableColumnHeaderProps<TData, TValue> =
+type DataTableColumnHeaderProps<TData extends RowData, TValue> =
   React.HTMLAttributes<HTMLDivElement> & {
-    column: Column<TData, TValue>
+    column: AppColumn<TData, TValue>
     title: string
   }
 
-export function DataTableColumnHeader<TData, TValue>({
+export function DataTableColumnHeader<TData extends RowData, TValue>({
   column,
   title,
   className,

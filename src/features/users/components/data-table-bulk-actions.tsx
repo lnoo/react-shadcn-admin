@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { type Table } from '@tanstack/react-table'
+import { type AppTable, type RowData } from '@/lib/table'
 import { Trash2, UserX, UserCheck, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { sleep } from '@/lib/utils'
@@ -13,11 +13,11 @@ import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-ta
 import { type User } from '../data/schema'
 import { UsersMultiDeleteDialog } from './users-multi-delete-dialog'
 
-type DataTableBulkActionsProps<TData> = {
-  table: Table<TData>
+type DataTableBulkActionsProps<TData extends RowData> = {
+  table: AppTable<TData>
 }
 
-export function DataTableBulkActions<TData>({
+export function DataTableBulkActions<TData extends RowData>({
   table,
 }: DataTableBulkActionsProps<TData>) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)

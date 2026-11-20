@@ -1,4 +1,4 @@
-import { type Row } from '@tanstack/react-table'
+import { type AppRow, type RowData } from '@/lib/table'
 import { Ellipsis as DotsHorizontalIcon, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,11 +18,11 @@ import { labels } from '../data/data'
 import { taskSchema } from '../data/schema'
 import { useTasks } from './tasks-provider'
 
-type DataTableRowActionsProps<TData> = {
-  row: Row<TData>
+type DataTableRowActionsProps<TData extends RowData> = {
+  row: AppRow<TData>
 }
 
-export function DataTableRowActions<TData>({
+export function DataTableRowActions<TData extends RowData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const task = taskSchema.parse(row.original)

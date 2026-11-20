@@ -1,12 +1,12 @@
 import { X as Cross2Icon } from 'lucide-react'
-import { type Table } from '@tanstack/react-table'
+import { type AppTable, type RowData } from '@/lib/table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTableFacetedFilter } from './faceted-filter'
 import { DataTableViewOptions } from './view-options'
 
-type DataTableToolbarProps<TData> = {
-  table: Table<TData>
+type DataTableToolbarProps<TData extends RowData> = {
+  table: AppTable<TData>
   searchPlaceholder?: string
   searchKey?: string
   filters?: {
@@ -20,14 +20,14 @@ type DataTableToolbarProps<TData> = {
   }[]
 }
 
-export function DataTableToolbar<TData>({
+export function DataTableToolbar<TData extends RowData>({
   table,
   searchPlaceholder = '筛选...',
   searchKey,
   filters = [],
 }: DataTableToolbarProps<TData>) {
   const isFiltered =
-    table.getState().columnFilters.length > 0 || table.getState().globalFilter
+    table.store.state.columnFilters.length > 0 || table.store.state.globalFilter
 
   return (
     <div className='flex items-center justify-between'>
@@ -46,7 +46,7 @@ export function DataTableToolbar<TData>({
         ) : (
           <Input
             placeholder={searchPlaceholder}
-            value={table.getState().globalFilter ?? ''}
+            value={table.store.state.globalFilter ?? ''}
             onChange={(event) => table.setGlobalFilter(event.target.value)}
             className='h-8 w-37.5 lg:w-62.5'
           />
