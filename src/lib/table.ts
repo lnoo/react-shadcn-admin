@@ -16,6 +16,9 @@ import {
   createFilteredRowModel,
   createPaginatedRowModel,
   createSortedRowModel,
+  filterFn_includesString,
+  sortFn_alphanumeric,
+  sortFn_text,
   type Table,
   tableFeatures,
 } from '@tanstack/react-table'
@@ -37,6 +40,8 @@ export const tableFeaturesConfig = tableFeatures({
   paginatedRowModel: createPaginatedRowModel(),
   facetedRowModel: createFacetedRowModel(),
   facetedUniqueValues: createFacetedUniqueValues(),
+  filterFns: { includesString: filterFn_includesString },
+  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
 })
 
 export type { RowData } from '@tanstack/react-table'
