@@ -404,7 +404,7 @@ describe('ConfigDrawer (integration)', () => {
 
     await expect
       .element(screen.getByRole('radio', { name: /选择默认/i }))
-      .toHaveAttribute('data-state', 'checked')
+      .toHaveAttribute('data-checked', '')
 
     await userEvent.click(
       screen.getByRole('radio', { name: /选择紧凑/i })
@@ -476,7 +476,7 @@ describe('ConfigDrawer (integration)', () => {
 
       await expect
         .element(screen.getByRole('radio', { name: /使用 default 预设/i }))
-        .toHaveAttribute('data-state', 'checked')
+        .toHaveAttribute('data-checked', '')
       await expect
         .element(screen.getByRole('radio', { name: /使用 brutalist 预设/i }))
         .toBeInTheDocument()

@@ -79,7 +79,7 @@ describe('UsersDeleteDialog', () => {
     await userEvent.click(cancelButton)
 
     expect(onOpenChange).toHaveBeenCalledOnce()
-    expect(onOpenChange).toHaveBeenCalledWith(false)
+    expect(onOpenChange.mock.calls[0][0]).toBe(false)
   })
 
   it('resets the username input when the dialog is closed and reopened', async () => {
