@@ -42,7 +42,6 @@ export function AiChatWidget() {
           align='end'
           side='top'
           sideOffset={12}
-          collisionPadding={16}
           className={cn(
             'flex h-[32rem] max-h-[70svh] w-[22rem] max-w-[calc(100vw-2rem)]',
             'flex-col overflow-hidden p-0'

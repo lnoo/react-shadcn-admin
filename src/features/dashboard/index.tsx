@@ -43,7 +43,7 @@ export function Dashboard() {
           defaultValue='overview'
           className='space-y-4'
         >
-          <div className='w-full overflow-x-auto pb-2'>
+          <div className='shrink-0 overflow-x-auto pb-2'>
             <TabsList>
               <TabsTrigger value='overview'>概览</TabsTrigger>
               <TabsTrigger value='analytics'>分析</TabsTrigger>

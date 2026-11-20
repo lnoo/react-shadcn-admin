@@ -26,7 +26,7 @@ export function ProfileDropdown() {
               <AvatarFallback>SN</AvatarFallback>
             </Avatar>
           </Button>} />
-        <DropdownMenuContent className='w-56' align='end' keepMounted>
+        <DropdownMenuContent className='w-56' align='end'>
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col gap-1.5'>
               <p className='text-sm leading-none font-medium'>satnaing</p>
