@@ -21,6 +21,7 @@ import { Badge } from '../ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -136,9 +137,11 @@ function SidebarMenuCollapsedDropdown({
             <ChevronRight className='ms-auto transition-transform duration-200 group-has-data-popup-open/menu-item:rotate-90' />
           </SidebarMenuButton>} />
         <DropdownMenuContent side='right' align='start' sideOffset={4}>
-          <DropdownMenuLabel>
-            {item.title} {item.badge ? `(${item.badge})` : ''}
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>
+              {item.title} {item.badge ? `(${item.badge})` : ''}
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           {item.items.map((sub) => (
             <DropdownMenuItem key={`${sub.title}-${sub.url}`} render={<Link

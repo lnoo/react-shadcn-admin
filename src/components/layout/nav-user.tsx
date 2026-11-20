@@ -63,18 +63,20 @@ export function NavUser({ user }: NavUserProps) {
               align='end'
               sideOffset={4}
             >
-              <DropdownMenuLabel className='p-0 font-normal'>
-                <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
-                  <Avatar className='h-8 w-8 rounded-lg'>
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
-                  </Avatar>
-                  <div className='grid flex-1 text-start text-sm leading-tight'>
-                    <span className='truncate font-semibold'>{user.name}</span>
-                    <span className='truncate text-xs'>{user.email}</span>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className='p-0 font-normal'>
+                  <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
+                    <Avatar className='h-8 w-8 rounded-lg'>
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
+                    </Avatar>
+                    <div className='grid flex-1 text-start text-sm leading-tight'>
+                      <span className='truncate font-semibold'>{user.name}</span>
+                      <span className='truncate text-xs'>{user.email}</span>
+                    </div>
                   </div>
-                </div>
-              </DropdownMenuLabel>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>

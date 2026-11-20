@@ -27,14 +27,16 @@ export function ProfileDropdown() {
             </Avatar>
           </Button>} />
         <DropdownMenuContent className='w-56' align='end'>
-          <DropdownMenuLabel className='font-normal'>
-            <div className='flex flex-col gap-1.5'>
-              <p className='text-sm leading-none font-medium'>satnaing</p>
-              <p className='text-xs leading-none text-muted-foreground'>
-                satnaingdev@gmail.com
-              </p>
-            </div>
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className='font-normal'>
+              <div className='flex flex-col gap-1.5'>
+                <p className='text-sm leading-none font-medium'>satnaing</p>
+                <p className='text-xs leading-none text-muted-foreground'>
+                  satnaingdev@gmail.com
+                </p>
+              </div>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem render={<Link to='/settings'>
