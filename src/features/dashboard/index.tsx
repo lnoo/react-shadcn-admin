@@ -39,22 +39,20 @@ export function Dashboard() {
           </div>
         </div>
         <Tabs
-          orientation='vertical'
+          orientation='horizontal'
           defaultValue='overview'
           className='space-y-4'
         >
-          <div className='shrink-0 overflow-x-auto pb-2'>
-            <TabsList>
-              <TabsTrigger value='overview'>概览</TabsTrigger>
-              <TabsTrigger value='analytics'>分析</TabsTrigger>
-              <TabsTrigger value='reports' disabled>
-                报表
-              </TabsTrigger>
-              <TabsTrigger value='notifications' disabled>
-                通知
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <TabsList>
+            <TabsTrigger value='overview'>概览</TabsTrigger>
+            <TabsTrigger value='analytics'>分析</TabsTrigger>
+            <TabsTrigger value='reports' disabled>
+              报表
+            </TabsTrigger>
+            <TabsTrigger value='notifications' disabled>
+              通知
+            </TabsTrigger>
+          </TabsList>
           <TabsContent value='overview' className='space-y-4'>
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
               <Card>

@@ -23,22 +23,22 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger render={<Button
-            size='icon'
-            variant='outline'
-            className={cn('md:size-7 lg:hidden', className)}
-          >
-            <Menu />
-            <span className='sr-only'>切换导航菜单</span>
-          </Button>} />
+          size='icon'
+          variant='outline'
+          className={cn('md:size-7 lg:hidden', className)}
+        >
+          <Menu />
+          <span className='sr-only'>切换导航菜单</span>
+        </Button>} />
         <DropdownMenuContent side='bottom' align='start'>
           {links.map(({ title, href, isActive, disabled }) => (
             <DropdownMenuItem key={`${title}-${href}`} render={<Link
-                to={href}
-                className={!isActive ? 'text-muted-foreground' : ''}
-                disabled={disabled}
-              >
-                {title}
-              </Link>} />
+              to={href}
+              className={!isActive ? 'text-muted-foreground' : ''}
+              disabled={disabled}
+            >
+              {title}
+            </Link>} />
           ))}
         </DropdownMenuContent>
       </DropdownMenu>

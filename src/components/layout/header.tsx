@@ -41,12 +41,12 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
         className={cn(
           'relative flex h-full items-center gap-3 p-4 sm:gap-4',
           offset > 10 &&
-            isSticky &&
-            'after:absolute after:inset-0 after:-z-10 after:bg-background/20 after:backdrop-blur-lg'
+          isSticky &&
+          'after:absolute after:inset-0 after:-z-10 after:bg-background/20 after:backdrop-blur-lg'
         )}
       >
         <SidebarTrigger variant='outline' className='max-md:scale-125' />
-        <Separator orientation='vertical' className='h-6' />
+        <Separator orientation='vertical' className='h-6 self-center!' />
         {children}
       </div>
     </header>

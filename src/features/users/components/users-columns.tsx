@@ -62,7 +62,7 @@ export const usersColumns: AppColumnDef<User>[] = [
       const fullName = `${firstName} ${lastName}`
       return <LongText className='max-w-36'>{fullName}</LongText>
     },
-    meta: { className: 'w-36' },
+    meta: { className: 'w-36', title: '姓名' },
   },
   {
     accessorKey: 'email',
@@ -72,6 +72,7 @@ export const usersColumns: AppColumnDef<User>[] = [
     cell: ({ row }) => (
       <div className='w-fit ps-2 text-nowrap'>{row.getValue('email')}</div>
     ),
+    meta: { title: '邮箱' },
   },
   {
     accessorKey: 'phoneNumber',
@@ -79,6 +80,7 @@ export const usersColumns: AppColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title='电话号码' />
     ),
     cell: ({ row }) => <div>{row.getValue('phoneNumber')}</div>,
+    meta: { title: '电话号码' },
     enableSorting: false,
   },
   {

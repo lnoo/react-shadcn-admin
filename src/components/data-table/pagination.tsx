@@ -27,6 +27,7 @@ export function DataTablePagination<TData extends RowData>({
 }: DataTablePaginationProps<TData>) {
   const currentPage = table.store.state.pagination.pageIndex + 1
   const totalPages = table.getPageCount()
+  const totalRows = table.getRowCount()
   const pageNumbers = getPageNumbers(currentPage, totalPages)
 
   return (
@@ -39,34 +40,32 @@ export function DataTablePagination<TData extends RowData>({
       style={{ overflowClipMargin: 1 }}
     >
       <div className='flex w-full items-center justify-between'>
-        <div className='flex w-25 items-center justify-center text-sm font-medium @2xl/content:hidden'>
-          第 {currentPage} 页，共 {totalPages} 页
+        <div className='flex w-25 items-center justify-center text-sm font-medium @3xl/content:hidden'>
+          共 {totalRows} 条
         </div>
-        <div className='flex items-center gap-2 @max-2xl/content:flex-row-reverse'>
-          <Select
-            value={`${table.store.state.pagination.pageSize}`}
-            onValueChange={(value) => {
-              table.setPageSize(Number(value))
-            }}
-          >
-            <SelectTrigger className='h-8 w-17.5'>
-              <SelectValue placeholder={table.store.state.pagination.pageSize} />
-            </SelectTrigger>
-            <SelectContent side='top'>
-              {[10, 20, 30, 40, 50].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
-                  {pageSize}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className='hidden text-sm font-medium sm:block'>每页行数</p>
-        </div>
+        <Select
+          value={`${table.store.state.pagination.pageSize}`}
+          onValueChange={(value) => {
+            table.setPageSize(Number(value))
+          }}
+        >
+          <SelectTrigger className='h-8'>
+            <SelectValue placeholder={table.store.state.pagination.pageSize} />
+            条 / 页
+          </SelectTrigger>
+          <SelectContent side='top'>
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <SelectItem key={pageSize} value={`${pageSize}`}>
+                {pageSize}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className='flex items-center sm:space-x-6 lg:space-x-8'>
-        <div className='flex w-25 items-center justify-center text-sm font-medium @max-3xl/content:hidden'>
-          第 {currentPage} 页，共 {totalPages} 页
+        <div className='hidden w-25 items-center justify-center text-sm font-medium @3xl/content:flex'>
+          共 {totalRows} 条
         </div>
         <div className='flex items-center space-x-2'>
           <Button

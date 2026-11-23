@@ -48,6 +48,7 @@ export const tasksColumns: AppColumnDef<Task>[] = [
     meta: {
       className: 'ps-1 max-w-0 w-2/3',
       tdClassName: 'ps-4',
+      title: '标题',
     },
     cell: ({ row }) => {
       const label = labels.find((label) => label.value === row.original.label)
@@ -65,7 +66,7 @@ export const tasksColumns: AppColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='状态' />
     ),
-    meta: { className: 'ps-1', tdClassName: 'ps-4' },
+    meta: { className: 'ps-1', tdClassName: 'ps-4', title: '状态' },
     cell: ({ row }) => {
       const status = statuses.find(
         (status) => status.value === row.getValue('status')
@@ -93,7 +94,7 @@ export const tasksColumns: AppColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='优先级' />
     ),
-    meta: { className: 'ps-1', tdClassName: 'ps-3' },
+    meta: { className: 'ps-1', tdClassName: 'ps-3', title: '优先级' },
     cell: ({ row }) => {
       const priority = priorities.find(
         (priority) => priority.value === row.getValue('priority')
