@@ -21,7 +21,6 @@ export function AiChatSurface({
   placeholder,
 }: AiChatSurfaceProps) {
   const { messages, sendMessage, stop, regenerate, status, error } = useAiChat()
-  const isBusy = status === 'submitted' || status === 'streaming'
 
   return (
     <div className={cn('flex h-full min-h-0 flex-col', className)}>
@@ -45,11 +44,20 @@ export function AiChatSurface({
         </div>
       )}
 
-      <div className='border-t border-border'>
+      <div>
         <AiChatComposer
-          onSubmit={(text) => sendMessage({ text })}
+          onSubmit={(text, files, { model, effort }) => {
+            const options = { body: { model, effort } }
+            if (files.length > 0) {
+              const transfer = new DataTransfer()
+              files.forEach((file) => transfer.items.add(file))
+              void sendMessage({ text, files: transfer.files }, options)
+            } else {
+              void sendMessage({ text }, options)
+            }
+          }}
           onStop={() => void stop()}
-          isBusy={isBusy}
+          status={status}
           autoFocus={autoFocus}
           placeholder={placeholder}
         />

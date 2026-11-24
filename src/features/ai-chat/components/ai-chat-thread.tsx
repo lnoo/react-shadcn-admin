@@ -1,8 +1,21 @@
-import { useEffect, useRef } from 'react'
-import { Loader2, Sparkles } from 'lucide-react'
-import { isTextUIPart, type UIMessage } from 'ai'
+import { ArrowDown, MessageCircleDashed } from 'lucide-react'
+import { type UIMessage } from 'ai'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from '@/components/ui/message-scroller'
 import { AiChatMessage } from './ai-chat-message'
 
 type AiChatThreadProps = {
@@ -26,28 +39,18 @@ export function AiChatThread({
   onRegenerate,
   onPromptClick,
 }: AiChatThreadProps) {
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const lastMessage = messages[messages.length - 1]
-  const lastTextLength = lastMessage?.parts
-    .filter(isTextUIPart)
-    .reduce((total, part) => total + part.text.length, 0)
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: 'end' })
-  }, [messages.length, lastTextLength])
-
   if (isEmpty) {
     return (
-      <div className='flex h-full flex-col items-center justify-center gap-4 p-4 text-center'>
-        <div className='flex size-12 items-center justify-center rounded-full border border-border'>
-          <Sparkles className='size-6 text-muted-foreground' />
-        </div>
-        <div className='space-y-1'>
-          <p className='font-medium'>有什么可以帮你的？</p>
-          <p className='text-sm text-muted-foreground'>
+      <Empty className='h-full p-4'>
+        <EmptyHeader>
+          <EmptyMedia variant='icon'>
+            <MessageCircleDashed className='size-6' />
+          </EmptyMedia>
+          <EmptyTitle>有什么可以帮你的？</EmptyTitle>
+          <EmptyDescription>
             当前为本地模拟回复，不会调用真实模型。
-          </p>
-        </div>
+          </EmptyDescription>
+        </EmptyHeader>
         <div className='flex flex-wrap justify-center gap-2'>
           {suggestions.map((suggestion) => (
             <Button
@@ -55,40 +58,50 @@ export function AiChatThread({
               type='button'
               size='sm'
               variant='outline'
+              className='shrink-0'
               onClick={() => onPromptClick(suggestion)}
             >
               {suggestion}
             </Button>
           ))}
         </div>
-      </div>
+      </Empty>
     )
   }
 
   return (
-    <ScrollArea className='h-full'>
-      <div className='flex flex-col gap-4 p-4'>
-        {messages.map((message, index) => (
-          <AiChatMessage
-            key={message.id}
-            message={message}
-            onRegenerate={
-              message.role === 'assistant' && index === messages.length - 1
-                ? onRegenerate
-                : undefined
-            }
-          />
-        ))}
-
-        {isStreaming && (
-          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-            <Loader2 className='size-4 animate-spin' />
-            <span>正在思考…</span>
-          </div>
-        )}
-
-        <div ref={bottomRef} />
-      </div>
-    </ScrollArea>
+    <MessageScrollerProvider autoScroll>
+      <MessageScroller className='h-full'>
+        <MessageScrollerViewport>
+          <MessageScrollerContent
+            aria-busy={isStreaming}
+            className='gap-5 px-4 py-2 sm:gap-6 sm:px-8'
+          >
+            {messages.map((message, index) => (
+              <MessageScrollerItem
+                key={message.id}
+                messageId={message.id}
+                scrollAnchor={message.role === 'user'}
+                className='animate-in fade-in slide-in-from-bottom-2 duration-300'
+              >
+                <AiChatMessage
+                  message={message}
+                  isAnimating={isStreaming && index === messages.length - 1}
+                  onRegenerate={
+                    message.role === 'assistant' && index === messages.length - 1
+                      ? onRegenerate
+                      : undefined
+                  }
+                />
+              </MessageScrollerItem>
+            ))}
+          </MessageScrollerContent>
+        </MessageScrollerViewport>
+        <MessageScrollerButton>
+          <ArrowDown className='size-4' />
+          <span className='sr-only'>跳到最新消息</span>
+        </MessageScrollerButton>
+      </MessageScroller>
+    </MessageScrollerProvider>
   )
 }

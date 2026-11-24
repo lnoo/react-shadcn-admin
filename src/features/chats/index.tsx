@@ -13,6 +13,7 @@ import {
   Send,
   Video,
   MessagesSquare,
+  ArrowDown,
 } from 'lucide-react'
 import { cn } from 'cn'
 import { getDisplayNameInitials } from '@/lib/utils'
@@ -20,6 +21,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { Input } from '@/components/ui/input'
+import { Bubble, BubbleContent } from '@/components/ui/bubble'
+import { Message, MessageContent, MessageFooter } from '@/components/ui/message'
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from '@/components/ui/message-scroller'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -45,7 +64,11 @@ export function Chats() {
     fullName.toLowerCase().includes(search.trim().toLowerCase())
   )
 
-  const currentMessage = selectedUser?.messages.reduce(
+  // The fixture stores messages newest-first; the scroller renders
+  // chronologically (oldest at top, newest at bottom), so reverse for display.
+  const messages = selectedUser ? [...selectedUser.messages].reverse() : []
+
+  const currentMessage = messages.reduce(
     (acc: Record<string, Convo[]>, obj) => {
       const key = format(obj.timestamp, 'yyyy年M月d日')
 
@@ -95,22 +118,20 @@ export function Chats() {
                 </Button>
               </div>
 
-              <label
-                className={cn(
-                  'focus-within:ring-1 focus-within:ring-ring focus-within:outline-hidden',
-                  'flex h-10 w-full items-center space-x-0 rounded-md border border-border ps-2'
-                )}
-              >
-                <SearchIcon size={15} className='me-2 stroke-slate-500' />
-                <span className='sr-only'>搜索</span>
-                <input
+              <div className='relative'>
+                <SearchIcon
+                  size={15}
+                  className='pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 stroke-slate-500'
+                />
+                <Input
                   type='text'
-                  className='w-full flex-1 bg-inherit text-sm focus-visible:outline-hidden'
                   placeholder='搜索聊天...'
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  className='ps-8'
+                  aria-label='搜索聊天'
                 />
-              </label>
+              </div>
             </div>
 
             <ScrollArea className='-mx-3 h-full overflow-scroll p-3'>
@@ -163,7 +184,7 @@ export function Chats() {
           {selectedUser ? (
             <div
               className={cn(
-                'absolute inset-0 start-full z-50 hidden w-full flex-1 flex-col border bg-background shadow-xs sm:static sm:z-auto sm:flex sm:rounded-md',
+                'absolute inset-0 start-full z-50 hidden w-full min-h-0 flex-1 flex-col border bg-background shadow-xs sm:static sm:z-auto sm:flex sm:rounded-md',
                 mobileSelectedUser && 'inset-s-0 flex'
               )}
             >
@@ -227,41 +248,67 @@ export function Chats() {
               </div>
 
               {/* Conversation */}
-              <div className='flex flex-1 flex-col gap-2 rounded-md px-4 pt-0 pb-4'>
-                <div className='flex size-full flex-1'>
-                  <div className='chat-text-container relative -me-4 flex flex-1 flex-col overflow-y-hidden'>
-                    <div className='chat-flex flex h-40 w-full grow flex-col-reverse justify-start gap-4 overflow-y-auto py-2 pe-4 pb-4'>
-                      {currentMessage &&
-                        Object.keys(currentMessage).map((key) => (
-                          <Fragment key={key}>
-                            {currentMessage[key].map((msg, index) => (
-                              <div
-                                key={`${msg.sender}-${msg.timestamp}-${index}`}
-                                className={cn(
-                                  'chat-box max-w-72 px-3 py-2 wrap-break-word shadow-lg',
-                                  msg.sender === SELF_SENDER
-                                    ? 'self-end rounded-[16px_16px_0_16px] bg-primary/90 text-primary-foreground/75'
-                                    : 'self-start rounded-[16px_16px_16px_0] bg-muted'
-                                )}
-                              >
-                                {msg.message}{' '}
-                                <span
-                                  className={cn(
-                                    'mt-1 block text-xs font-light text-foreground/75 italic',
-                                    msg.sender === SELF_SENDER &&
-                                    'text-end text-primary-foreground/85'
-                                  )}
+              <div className='flex min-h-0 flex-1 flex-col gap-2 rounded-md px-4 pt-0 pb-4'>
+                <div className='min-h-0 flex-1'>
+                  <MessageScrollerProvider autoScroll>
+                    <MessageScroller>
+                      <MessageScrollerViewport>
+                        <MessageScrollerContent className='gap-6 px-1 py-2 pe-3'>
+                          {Object.keys(currentMessage).map((key) => (
+                            <Fragment key={key}>
+                              {currentMessage[key].map((msg, index) => (
+                                <MessageScrollerItem
+                                  key={`${msg.sender}-${msg.timestamp}-${index}`}
+                                  scrollAnchor={msg.sender === SELF_SENDER}
                                 >
-                                  {format(msg.timestamp, 'HH:mm')}
-                                </span>
+                                  <Message
+                                    align={
+                                      msg.sender === SELF_SENDER ? 'end' : 'start'
+                                    }
+                                  >
+                                    <MessageContent>
+                                      <Bubble
+                                        align={
+                                          msg.sender === SELF_SENDER
+                                            ? 'end'
+                                            : 'start'
+                                        }
+                                        variant={
+                                          msg.sender === SELF_SENDER
+                                            ? 'default'
+                                            : 'muted'
+                                        }
+                                      >
+                                        <BubbleContent>
+                                          {msg.message}
+                                        </BubbleContent>
+                                      </Bubble>
+                                      <MessageFooter className='px-3'>
+                                        <time
+                                          dateTime={msg.timestamp.toISOString()}
+                                        >
+                                          {format(msg.timestamp, 'HH:mm')}
+                                        </time>
+                                      </MessageFooter>
+                                    </MessageContent>
+                                  </Message>
+                                </MessageScrollerItem>
+                              ))}
+                              <div className='text-center text-xs text-muted-foreground'>
+                                {key}
                               </div>
-                            ))}
-                            <div className='text-center text-xs'>{key}</div>
-                          </Fragment>
-                        ))}
-                    </div>
-                  </div>
+                            </Fragment>
+                          ))}
+                        </MessageScrollerContent>
+                      </MessageScrollerViewport>
+                      <MessageScrollerButton>
+                        <ArrowDown className='size-4' />
+                        <span className='sr-only'>跳到最新消息</span>
+                      </MessageScrollerButton>
+                    </MessageScroller>
+                  </MessageScrollerProvider>
                 </div>
+
                 <form className='flex w-full flex-none gap-2'>
                   <div className='flex flex-1 items-center gap-2 rounded-md border border-input bg-card px-2 py-1 focus-within:ring-1 focus-within:ring-ring focus-within:outline-hidden lg:gap-4'>
                     <div className='space-x-1'>
@@ -319,26 +366,18 @@ export function Chats() {
               </div>
             </div>
           ) : (
-            <div
-              className={cn(
-                'absolute inset-0 start-full z-50 hidden w-full flex-1 flex-col justify-center rounded-md border bg-card shadow-xs sm:static sm:z-auto sm:flex'
-              )}
-            >
-              <div className='flex flex-col items-center space-y-6'>
-                <div className='flex size-16 items-center justify-center rounded-full border-2 border-border'>
-                  <MessagesSquare className='size-8' />
-                </div>
-                <div className='space-y-2 text-center'>
-                  <h1 className='text-xl font-semibold'>您的消息</h1>
-                  <p className='text-sm text-muted-foreground'>
-                    发送消息开始聊天。
-                  </p>
-                </div>
-                <Button onClick={() => setCreateConversationDialog(true)}>
-                  发送消息
-                </Button>
-              </div>
-            </div>
+            <Empty className='h-full'>
+              <EmptyHeader>
+                <EmptyMedia variant='icon'>
+                  <MessagesSquare className='size-6' />
+                </EmptyMedia>
+                <EmptyTitle>您的消息</EmptyTitle>
+                <EmptyDescription>发送消息开始聊天。</EmptyDescription>
+              </EmptyHeader>
+              <Button onClick={() => setCreateConversationDialog(true)}>
+                发送消息
+              </Button>
+            </Empty>
           )}
         </section>
         <NewChat

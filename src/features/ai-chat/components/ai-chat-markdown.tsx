@@ -1,115 +1,105 @@
 import { memo } from 'react'
-import Markdown, { type Components } from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import {
+  Streamdown,
+  useIsCodeFenceIncomplete,
+  type ExtraProps,
+} from 'streamdown'
 import { cn } from 'cn'
+import { useHighlightedCode } from '@/hooks/use-highlighted-code'
+import {
+  CodeBlock,
+  CodeBlockActions,
+  CodeBlockContent,
+  CodeBlockCopyButton,
+  CodeBlockHeader,
+  CodeBlockLine,
+  CodeBlockTitle,
+} from '@/components/ui/code-block'
 
-const components: Partial<Components> = {
-  p: ({ className, ...props }) => (
-    <p className={cn('my-2 first:mt-0 last:mb-0', className)} {...props} />
-  ),
-  h1: ({ className, ...props }) => (
-    <h1
-      className={cn('mt-4 mb-2 text-xl font-semibold first:mt-0', className)}
-      {...props}
-    />
-  ),
-  h2: ({ className, ...props }) => (
-    <h2
-      className={cn('mt-4 mb-2 text-lg font-semibold first:mt-0', className)}
-      {...props}
-    />
-  ),
-  h3: ({ className, ...props }) => (
-    <h3
-      className={cn('mt-3 mb-2 text-base font-semibold first:mt-0', className)}
-      {...props}
-    />
-  ),
-  ul: ({ className, ...props }) => (
-    <ul className={cn('my-2 list-disc space-y-1 ps-5', className)} {...props} />
-  ),
-  ol: ({ className, ...props }) => (
-    <ol className={cn('my-2 list-decimal space-y-1 ps-5', className)} {...props} />
-  ),
-  a: ({ className, ...props }) => (
-    <a
-      className={cn('font-medium underline underline-offset-4', className)}
-      {...props}
-    />
-  ),
-  blockquote: ({ className, ...props }) => (
-    <blockquote
-      className={cn('my-2 border-s-2 border-border ps-4 text-muted-foreground italic', className)}
-      {...props}
-    />
-  ),
-  hr: ({ className, ...props }) => (
-    <hr className={cn('my-4 border-border', className)} {...props} />
-  ),
-  table: ({ className, ...props }) => (
-    <div className='my-3 overflow-x-auto'>
-      <table
-        className={cn('w-full border-collapse text-sm', className)}
-        {...props}
-      />
-    </div>
-  ),
-  th: ({ className, ...props }) => (
-    <th
-      className={cn(
-        'border border-border bg-muted px-3 py-2 text-start font-semibold',
-        className
-      )}
-      {...props}
-    />
-  ),
-  td: ({ className, ...props }) => (
-    <td
-      className={cn('border border-border px-3 py-2 align-top', className)}
-      {...props}
-    />
-  ),
-  code: ({ className, ...props }) => {
-    // A `language-*` class means this is a fenced block; the `pre` wrapper
-    // already provides the chrome, so it should not be styled again here.
-    const isFenced = className?.startsWith('language-')
+function MarkdownCodeBlock({
+  code,
+  language,
+}: {
+  code: string
+  language: string
+}) {
+  // True until the closing fence has streamed in.
+  const incomplete = useIsCodeFenceIncomplete()
+  const lines = useHighlightedCode(code, language)
 
+  return (
+    <CodeBlock>
+      <CodeBlockHeader>
+        <CodeBlockTitle>{language || 'text'}</CodeBlockTitle>
+        <CodeBlockActions>
+          <CodeBlockCopyButton value={code} disabled={incomplete} />
+        </CodeBlockActions>
+      </CodeBlockHeader>
+      <CodeBlockContent>
+        {lines.map((line, index) => (
+          <CodeBlockLine key={index}>{line}</CodeBlockLine>
+        ))}
+      </CodeBlockContent>
+    </CodeBlock>
+  )
+}
+
+function MarkdownCode({
+  node: _node,
+  className,
+  children,
+  ...props
+}: React.ComponentProps<'code'> & ExtraProps) {
+  // Streamdown only sets `data-block` on fenced code; inline code stays inline.
+  if (!('data-block' in props)) {
     return (
       <code
         className={cn(
-          'font-mono text-[0.85em]',
-          !isFenced && 'rounded-sm bg-muted px-1 py-0.5',
+          'rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em]',
           className
         )}
         {...props}
-      />
+      >
+        {children}
+      </code>
     )
-  },
-  pre: ({ className, ...props }) => (
-    <pre
-      className={cn(
-        'my-3 overflow-x-auto rounded-md border border-border bg-muted p-3 font-mono text-[0.85em] leading-relaxed',
-        className
-      )}
-      {...props}
+  }
+
+  return (
+    <MarkdownCodeBlock
+      code={typeof children === 'string' ? children : ''}
+      language={/language-(\S+)/.exec(className ?? '')?.[1] ?? ''}
     />
-  ),
+  )
 }
+
+const components = { code: MarkdownCode }
 
 type AiChatMarkdownProps = {
   children: string
   className?: string
+  isAnimating?: boolean
 }
 
 export const AiChatMarkdown = memo(function AiChatMarkdown({
   children,
   className,
+  isAnimating,
 }: AiChatMarkdownProps) {
   return (
     <div className={cn('text-sm break-words', className)}>
-      <Markdown remarkPlugins={[remarkGfm]} components={components}>
+      <Streamdown
+        controls={false}
+        components={components}
+        isAnimating={isAnimating}
+        animated={
+          isAnimating
+            ? { animation: 'blurIn', duration: 200, easing: 'ease-out' }
+            : undefined
+        }
+      >
         {children}
-      </Markdown>
+      </Streamdown>
     </div>
   )
 })

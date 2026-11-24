@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useMatchRoute } from '@tanstack/react-router'
 import { Bot, X } from 'lucide-react'
 import { cn } from 'cn'
@@ -8,7 +8,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { AiChatSurface } from './ai-chat-surface'
+// The chat surface pulls in Streamdown + shiki. Only load it when the panel is
+// opened, so the floating launcher stays cheap on every authenticated page.
+const LazyAiChatSurface = lazy(() =>
+  import('./ai-chat-surface').then((module) => ({
+    default: module.AiChatSurface,
+  }))
+)
 
 /**
  * Global floating launcher. Sits at z-40 on purpose — every sheet, dialog and
@@ -64,10 +70,20 @@ export function AiChatWidget() {
             </Button>
           </div>
 
-          <AiChatSurface
-            className='min-h-0 flex-1'
-            placeholder='输入消息…'
-          />
+          {open && (
+            <Suspense
+              fallback={
+                <div className='flex min-h-0 flex-1 items-center justify-center text-sm text-muted-foreground'>
+                  正在加载…
+                </div>
+              }
+            >
+              <LazyAiChatSurface
+                className='min-h-0 flex-1'
+                placeholder='输入消息…'
+              />
+            </Suspense>
+          )}
         </PopoverContent>
       </Popover>
     </div>
